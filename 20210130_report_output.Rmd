@@ -1,0 +1,12 @@
+---
+title: "Threshold analysis"
+#author: "Victor"
+date: "Template: 2021/01/30"
+output: html_document
+params:
+  output: NA
+---
+
+```{r}
+params$output
+```

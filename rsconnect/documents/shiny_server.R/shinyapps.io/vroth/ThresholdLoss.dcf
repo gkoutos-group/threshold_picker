@@ -1,0 +1,13 @@
+name: ThresholdLoss
+title: ThresholdLoss
+username:
+account: vroth
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3542786
+bundleId: 4159536
+url: https://vroth.shinyapps.io/thresholdloss/
+when: 1611969866.88915
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: 20210130_report_output.Rmd

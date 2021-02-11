@@ -75,20 +75,6 @@ ui <- fluidPage(
     
     mainPanel(
       span(textOutput("dataset_info"), style="color:blue", align='right'),
-      helpText("Basic info"),
-      verbatimTextOutput("info"),
-      
-      fluidRow(column(5, 
-                      helpText("Breakdown of lifetime costs for threshold"),
-                      verbatimTextOutput("costs")),
-               column(5, 
-                      helpText("Breakdown of financial costs for threshold"),
-                      verbatimTextOutput("costs_cash")),
-               column(6, 
-                      helpText("Confusion matrix for threshold"),
-                      tableOutput('confusion_matrix'))),
-      
-      
       fluidRow(
         splitLayout(cellWidths = c("50%", "50%"),
                     plotOutput("auc_plot",
@@ -102,8 +88,49 @@ ui <- fluidPage(
                                dblclick = "plot_dblclick",
                                hover = "plot_hover",
                                brush = "plot_brush")
-        ))
+        ),
+        splitLayout(cellWidths = c("50%", "50%"),
+                    plotOutput("precision_recall",
+                               click = "plot_click",
+                               dblclick = "plot_dblclick",
+                               hover = "plot_hover",
+                               brush = "plot_brush"
+                    ),
+                    plotOutput("nne_recall",
+                               click = "plot_click",
+                               dblclick = "plot_dblclick",
+                               hover = "plot_hover",
+                               brush = "plot_brush")
+        ),
+        splitLayout(cellWidths = c("50%", "50%"),
+                    plotOutput("f1_score",
+                               click = "plot_click",
+                               dblclick = "plot_dblclick",
+                               hover = "plot_hover",
+                               brush = "plot_brush"
+                    )
+        )),
+      helpText("Basic info"),
+      verbatimTextOutput("info"),
+      
+      fluidRow(column(3, 
+                      helpText("Breakdown of lifetime costs for threshold"),
+                      verbatimTextOutput("costs")),
+               column(3, 
+                      helpText("Breakdown of financial costs for threshold"),
+                      verbatimTextOutput("costs_cash")),
+               column(6, 
+                      helpText("Confusion matrix for threshold"),
+                      tableOutput('confusion_matrix'))),
+      
+      helpText('Performance Metrics'),
+      verbatimTextOutput('metrics'),
+      HTML("* ModelMetrics 1.2.2 has an issue with TNR calculation, this could slightly reduce the calculated value.")
     )
     
-  )
+  ),
+  
+  hr(),
+  HTML('<b>Disclaimer: This is a prototype tool to support research. Validate your findings. </b><br/>This code is currently private and may be accessed under request to <a href="mailto:V.RothCardoso@bham.ac.uk">V.RothCardoso@bham.ac.uk</a>.')
+  # 2021/02/01 current repository: https://github.com/gkoutos-group/threshold_picker
 )

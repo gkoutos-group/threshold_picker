@@ -1,6 +1,7 @@
 library(shiny)
 library(pROC)
 library(ModelMetrics)
+library(PRROC)
 
 server <- function(input, output) {
   # returns the dataset
@@ -17,6 +18,21 @@ server <- function(input, output) {
     str_replace_all(paste(as.numeric(as.POSIXct(as.character(Sys.time())))), '[.]', '')
   }
   
+  get_number_predicted_positive <- reactive({
+    return(sum(df()[[input$predicted_scores]] > input$threshold_slider))
+  })
+  
+  threshold_to_precision <- function() {
+    if(get_number_predicted_positive() == 0) {
+      return(1)
+    }
+    return(ppv(df()[[input$true_variable]], df()[[input$predicted_scores]], cutoff=input$threshold_slider))
+  }
+  
+  threshold_to_nne <- function() {
+    return(1/ppv(df()[[input$true_variable]], df()[[input$predicted_scores]], cutoff=input$threshold_slider))
+  }
+  
   threshold_to_sensitivity <- function() {
     return(tpr(df()[[input$true_variable]], df()[[input$predicted_scores]], cutoff=input$threshold_slider))
   }
@@ -25,9 +41,17 @@ server <- function(input, output) {
     return(tnr(df()[[input$true_variable]], df()[[input$predicted_scores]], cutoff=input$threshold_slider))
   }
   
+  threshold_to_f1score <- function() {
+    return(f1Score(df()[[input$true_variable]], df()[[input$predicted_scores]], cutoff=input$threshold_slider))
+  }
+  
+  threshold_to_accuracy <- function() {
+    return(sum(df()[[input$true_variable]] == as.integer(df()[[input$predicted_scores]] > input$threshold_slider)) / nrow(df()))
+  }
+  
   # predict the datapoitns for a given threshold
   predict_for_threshold <- function(threshold) {
-    return(as.integer(df()[[input$predicted_scores]] >= threshold))
+    return(as.integer(df()[[input$predicted_scores]] > threshold))
   }
   
   # calculates the lifetime cost
@@ -60,7 +84,7 @@ server <- function(input, output) {
     roc_full_resolution <- roc(df()[[input$true_variable]], df()[[input$predicted_scores]], levels=c(0, 1))
     #rounded_scores <- round(df[[predicted_scores]], digits=1)
     #roc_rounded <- roc(df[[true_variable]], rounded_scores)
-    p <- plot(roc_full_resolution, print.auc=TRUE)
+    p <- plot(roc_full_resolution, main='AUC', print.auc=TRUE)
     #lines(roc_rounded, col="red", type='b')
     #text(0.4, 0.43, labels=sprintf("AUC: %0.3f", auc(roc_rounded)), col="red")
     points(x=threshold_to_specificity(), y=threshold_to_sensitivity(), pch=17, col='red')
@@ -81,50 +105,100 @@ server <- function(input, output) {
     # budget lines
     budget <- input$budget * nrow(df())
     budget_cash <- input$budget_cash * nrow(df())
-    
-    # y axis boundaries
-    ymi <- min(min(y), min(y_cash), budget, budget_cash)
-    yma <- max(max(y), max(y_cash), budget, budget_cash)
 
+    par(mar=c(5, 5, 3, 5))
     # plot main plot
-    p <- plot(x, y, type='o', main='Loss curve', xlab='Threshold', ylab='Cost', col='blue', ylim=c(ymi, yma))
+    ymi <- min(min(y), budget)
+    yma <- max(max(y), budget)
+    p <- plot(x, y, type='o', main='Loss curve', xlab='Threshold', ylab='Lifetime cost', col='blue', ylim=c(ymi, yma))
+    abline(h=budget, col='chocolate4')
+    
+    par(new=T)
     # plot financial costs
-    lines(x, y_cash, type='o', col='green', lty=2)
+    ymi_cash <- min(min(y_cash), budget_cash)
+    yma_cash <- max(max(y_cash), budget_cash)
+    
+    plot(x, y_cash, type='o', col='green', lty=2, xaxt='n', yaxt='n', ylab="", xlab="", ylim=c(ymi_cash, yma_cash))
+    abline(h=budget_cash, col='chartreuse4', lty=2)
+    axis(side=4)
+    mtext('Financial cost', side=4, line=3)
+    
+    
     # vertical line for the slider
     abline(v=input$threshold_slider, col='red')
     
-    # horizontal lines
-    abline(h=budget, col='chocolate4')
-    abline(h=budget_cash, col='chartreuse4', lty=2)
-    
     # legends
-    legend("topright", 
+    if(input$threshold_slider >= 0.5) {
+      position_legend <- 'topleft'
+    } else {
+      position_legend <- 'topright'
+    }
+    legend(position_legend, 
            legend=c('Life', 'Financial', 'Lifetime budget', 'Financial budget', 'Selected threshold'), 
            col=c('blue', 'green', 'chocolate4', 'chartreuse4', 'red'), 
            lty=c(1, 2, 1, 2, 1),
            cex=0.8)
     
-    
-    
     return(p)
   }
   
-  #output$costs <- renderText({
-  #  paste(paste("TP cost:",
-  #              input$tp_cost), 
-  #        paste("FP cost:",
-  #              input$fp_cost), 
-  #        paste("TN cost:",
-  #              input$tn_cost), 
-  #        paste("FN cost:",
-  #              input$fn_cost), 
-  #        sep='\n')
-  #})
+  # return the precision - recall plot
+  plot_precision_recall <- function() {
+    c0 <- df()[[input$predicted_scores]][df()[[input$true_variable]] == 0]
+    c1 <- df()[[input$predicted_scores]][df()[[input$true_variable]] == 1]
+    pbase <- pr.curve(scores.class0=c1, scores.class1=c0, curve=T)
+    p <- plot(x=pbase$curve[, 1], y=pbase$curve[, 2], type='l', main='Precision x Recall curve', xlab='Recall (Sensitivity)', ylab='Precision', ylim=c(0, 1), xlim=c(0, 1))
+    points(x=threshold_to_sensitivity(), y=threshold_to_precision(), pch=17, col='red')
+    if(get_number_predicted_positive() == 0) {
+      text(0.5, 0.5, 'Plot may not be reliable (due to number of predicted positive is 0)')
+    }
+    return(p)
+  }
   
-  output$costs <- renderText({ 
-    cm <- confusion_matrix(input$threshold_slider)
+  # return the precision - recall plot
+  plot_nne_recall <- function() {
+    c0 <- df()[[input$predicted_scores]][df()[[input$true_variable]] == 0]
+    c1 <- df()[[input$predicted_scores]][df()[[input$true_variable]] == 1]
+    pbase <- pr.curve(scores.class0=c1, scores.class1=c0, curve=T)
+    p <- plot(x=pbase$curve[, 1], y=1/pbase$curve[, 2], type='l', main='NNE x Recall curve', xlab='Recall (Sensitivity)', ylab='Number Needed to Evaluate (NNE)', xlim=c(0, 1))
+    points(x=threshold_to_sensitivity(), y=1/threshold_to_precision(), pch=17, col='red')
+    if(get_number_predicted_positive() == 0) {
+      text(0.5, min(1/pbase$curve[, 2]) + (max(1/pbase$curve[, 2]) - min(1/pbase$curve[, 2]))/2, 'Plot may not be reliable (due to number of predicted positive is 0)')
+    }
+    return(p)
+  }
+  
+  plot_f1_score <- function() {
+    x = important_points()
+    y = sapply(x, function(x) {f1Score(df()[[input$true_variable]], df()[[input$predicted_scores]], cutoff=x)} ) # obtain f1 score vector
     
-    paste(paste0("TP cost: ",
+    # plot main plot
+    p <- plot(x, y, type='l', main='F1-score curve', xlab='Threshold', ylab='F1-score', col='blue', ylim=c(0, 1), xlim=c(0, 1))
+    # vertical line for the slider
+    abline(v=input$threshold_slider, col='red')
+    return(p)
+  }
+  
+  get_basic_info <- function() {
+    return(paste(paste('Threshold:', input$threshold_slider),
+                 paste('Threshold life cost:', cost_overall(input$threshold_slider)),
+                 paste('Threshold financial cost:', cost_cash_overall(input$threshold_slider)),
+                 sep='\n'))
+  }
+  
+  get_set_of_metrics <- function() {
+    return(paste(paste('Threshold:', input$threshold_slider),
+                 paste('Accuracy:', threshold_to_accuracy()),
+                 paste('Precision (PPV):', if(get_number_predicted_positive() == 0) "NA (no positive prediction)" else threshold_to_precision()),
+                 paste('Sensitivity (TPR, Recall, Probability of detection, Power):', threshold_to_sensitivity()),
+                 paste('Specificity (TNR, Selectivity):', threshold_to_specificity(), "*"),
+                 paste('F-1 score:', threshold_to_f1score()),
+                 sep='\n'))
+  }
+
+  get_costs_calc <- function() {
+    cm <- confusion_matrix(input$threshold_slider)
+    return(paste(paste0("TP cost: ",
                  input$tp_cost,
                  " x ",
                  cm[2, 2],
@@ -148,13 +222,12 @@ server <- function(input, output) {
                  cm[1, 2],
                  " = ",
                  cm[1, 2] * input$fn_cost), 
-          sep='\n')
-  })
+          sep='\n'))
+  }
   
-  output$costs_cash <- renderText({ 
+  get_costs_calc_cash <- function() {
     cm <- confusion_matrix(input$threshold_slider)
-    
-    paste(paste0("TP cost: ",
+    return(paste(paste0("TP cost: ",
                  input$tp_cost_cash,
                  " x ",
                  cm[2, 2],
@@ -178,10 +251,8 @@ server <- function(input, output) {
                  cm[1, 2],
                  " = ",
                  cm[1, 2] * input$fn_cost_cash), 
-          sep='\n')
-  })
-  
-  output$auc_plot <- renderPlot({plot_auc()})
+          sep='\n'))
+  }
   
   loaded_file_output <- function() {
     if(is.null(input$file_input$datapath)) {
@@ -191,23 +262,25 @@ server <- function(input, output) {
     }
   }
   
+  # info/text
   output$dataset_info <- renderText({loaded_file_output()})
+  output$info <- renderText({get_basic_info()})
+  output$costs <- renderText({get_costs_calc()})
+  output$costs_cash <- renderText({get_costs_calc_cash()})
+  output$metrics <- renderText({get_set_of_metrics()})
   
-  output$info <- renderText({paste(paste('Threshold:', input$threshold_slider),
-                                   paste('Sensitivity:', 
-                                         threshold_to_sensitivity()),
-                                   paste('Specificity:', 
-                                         threshold_to_specificity()),
-                                   paste('Threshold cost:',
-                                         cost_overall(input$threshold_slider)),
-                                   sep='\n')})
-  
-  output$cost_plot <- renderPlot({plot_cost()})
-  
+  # confusion matrix
   output$confusion_matrix <- renderTable({
     d <- confusion_matrix(input$threshold_slider)
     colnames(d) <- c('Label Negative', 'Label Positive')
     row.names(d) <- c('Predicted Negative', 'Predicted Positive')
     d
   }, rownames=T)
+  
+  # plots
+  output$auc_plot <- renderPlot({plot_auc()})
+  output$cost_plot <- renderPlot({plot_cost()})
+  output$precision_recall <- renderPlot({plot_precision_recall()})
+  output$nne_recall <- renderPlot({plot_nne_recall()})
+  output$f1_score <- renderPlot({plot_f1_score()})
 }
