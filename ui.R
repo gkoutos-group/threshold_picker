@@ -125,11 +125,9 @@ ui <- fluidPage(
                                            tableOutput('confusion_matrix'))),
                            
                            helpText('Performance Metrics'),
-                           verbatimTextOutput('metrics')),
-                  HTML("* ModelMetrics 1.2.2 has an issue with TNR calculation, this could slightly reduce the calculated value.")
-      ),
-    )
-    
+                           verbatimTextOutput('metrics'),
+                           HTML("* ModelMetrics 1.2.2 has an issue with TNR calculation, this could slightly reduce the calculated value."))
+      ))
   ),
   
   hr(),
