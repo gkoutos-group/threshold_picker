@@ -75,57 +75,59 @@ ui <- fluidPage(
     
     mainPanel(
       span(textOutput("dataset_info"), style="color:blue", align='right'),
-      fluidRow(
-        splitLayout(cellWidths = c("50%", "50%"),
-                    plotOutput("auc_plot",
-                               click = "plot_click",
-                               dblclick = "plot_dblclick",
-                               hover = "plot_hover",
-                               brush = "plot_brush"
+      tabsetPanel(type = "tabs",
+                  tabPanel("Plots", fluidRow(
+                    splitLayout(cellWidths = c("50%", "50%"),
+                                plotOutput("auc_plot",
+                                           click = "plot_click",
+                                           dblclick = "plot_dblclick",
+                                           hover = "plot_hover",
+                                           brush = "plot_brush"
+                                ),
+                                plotOutput("cost_plot",
+                                           click = "plot_click",
+                                           dblclick = "plot_dblclick",
+                                           hover = "plot_hover",
+                                           brush = "plot_brush")
                     ),
-                    plotOutput("cost_plot",
-                               click = "plot_click",
-                               dblclick = "plot_dblclick",
-                               hover = "plot_hover",
-                               brush = "plot_brush")
-        ),
-        splitLayout(cellWidths = c("50%", "50%"),
-                    plotOutput("precision_recall",
-                               click = "plot_click",
-                               dblclick = "plot_dblclick",
-                               hover = "plot_hover",
-                               brush = "plot_brush"
+                    splitLayout(cellWidths = c("50%", "50%"),
+                                plotOutput("precision_recall",
+                                           click = "plot_click",
+                                           dblclick = "plot_dblclick",
+                                           hover = "plot_hover",
+                                           brush = "plot_brush"
+                                ),
+                                plotOutput("nne_recall",
+                                           click = "plot_click",
+                                           dblclick = "plot_dblclick",
+                                           hover = "plot_hover",
+                                           brush = "plot_brush")
                     ),
-                    plotOutput("nne_recall",
-                               click = "plot_click",
-                               dblclick = "plot_dblclick",
-                               hover = "plot_hover",
-                               brush = "plot_brush")
-        ),
-        splitLayout(cellWidths = c("50%", "50%"),
-                    plotOutput("f1_score",
-                               click = "plot_click",
-                               dblclick = "plot_dblclick",
-                               hover = "plot_hover",
-                               brush = "plot_brush"
-                    )
-        )),
-      helpText("Basic info"),
-      verbatimTextOutput("info"),
-      
-      fluidRow(column(3, 
-                      helpText("Breakdown of lifetime costs for threshold"),
-                      verbatimTextOutput("costs")),
-               column(3, 
-                      helpText("Breakdown of financial costs for threshold"),
-                      verbatimTextOutput("costs_cash")),
-               column(6, 
-                      helpText("Confusion matrix for threshold"),
-                      tableOutput('confusion_matrix'))),
-      
-      helpText('Performance Metrics'),
-      verbatimTextOutput('metrics'),
-      HTML("* ModelMetrics 1.2.2 has an issue with TNR calculation, this could slightly reduce the calculated value.")
+                    splitLayout(cellWidths = c("50%", "50%"),
+                                plotOutput("f1_score",
+                                           click = "plot_click",
+                                           dblclick = "plot_dblclick",
+                                           hover = "plot_hover",
+                                           brush = "plot_brush"
+                                )
+                    ))),
+                  tabPanel("Summary", helpText("Basic info"),
+                           verbatimTextOutput("info"),
+                           
+                           fluidRow(column(3, 
+                                           helpText("Breakdown of lifetime costs for threshold"),
+                                           verbatimTextOutput("costs")),
+                                    column(3, 
+                                           helpText("Breakdown of financial costs for threshold"),
+                                           verbatimTextOutput("costs_cash")),
+                                    column(6, 
+                                           helpText("Confusion matrix for threshold"),
+                                           tableOutput('confusion_matrix'))),
+                           
+                           helpText('Performance Metrics'),
+                           verbatimTextOutput('metrics')),
+                  HTML("* ModelMetrics 1.2.2 has an issue with TNR calculation, this could slightly reduce the calculated value.")
+      ),
     )
     
   ),
