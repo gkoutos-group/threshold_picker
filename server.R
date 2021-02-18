@@ -93,7 +93,7 @@ server <- function(input, output) {
   
   # return the different points of significant threshold
   important_points <- function() {
-    return(sort(c(0, 1, unique(df()[[input$predicted_scores]]))))
+    return(sort(c(0, 1, unique(round(df()[[input$predicted_scores]], digits=2)))))
   }
   
   # return the plot with the costs
