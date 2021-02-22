@@ -81,7 +81,7 @@ server <- function(input, output) {
   
   # plot the auc
   plot_auc <- function() {
-    roc_full_resolution <- roc(df()[[input$true_variable]], df()[[input$predicted_scores]], levels=c(0, 1))
+    roc_full_resolution <- roc(df()[[input$true_variable]], df()[[input$predicted_scores]], levels=c(0, 1), direction='<')
     #rounded_scores <- round(df[[predicted_scores]], digits=1)
     #roc_rounded <- roc(df[[true_variable]], rounded_scores)
     p <- plot(roc_full_resolution, main='AUC', print.auc=TRUE)
