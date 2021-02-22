@@ -2,6 +2,8 @@ library(shiny)
 library(pROC)
 library(ModelMetrics)
 library(PRROC)
+library(ggplot2)
+library(plyr)
 
 server <- function(input, output) {
   # returns the dataset
@@ -168,6 +170,35 @@ server <- function(input, output) {
     return(p)
   }
   
+  # histogram of predictions
+  plot_hist_pred <- function() {
+    e <- cbind(df())
+    
+    e[[input$true_variable]] <- as.integer(as.character(e[[input$true_variable]]))
+    e$internals___ <- as.integer(e[[input$predicted_scores]] >= input$threshold_slider)
+    e$internals_class___ <- as.integer(e$internals___ == e[[input$true_variable]])
+    
+    e$internals___ <- as.factor(e$internals___)
+    e$internals_class___ <- as.factor(e$internals_class___)
+    e$internals___ <- revalue(e$internals___, replace=c("0"="N", "1"="P"))
+    e$internals_class___ <- revalue(e$internals_class___, replace=c("0"="F", "1"="T"))
+    
+    e$internals___ <- as.character(e$internals___)
+    e$internals_class___ <- as.character(e$internals_class___)
+    
+    e$internals_class___ <- paste(e$internals_class___, e$internals___, sep="")
+    e$internals_class___ <- as.factor(e$internals_class___)
+    
+    p <- ggplot(e, aes_string(x=input$predicted_scores,
+                              fill="internals_class___")) +
+        geom_histogram(position="identity", bins=20) + 
+        ggtitle("Histogram of predicted scores") + labs(x="Predicted scores", fill="Class") + 
+        geom_vline(xintercept=input$threshold_slider, color="red") +
+        theme_bw() + xlim(0, 1)
+    
+    return(p)
+  }
+  
   plot_f1_score <- function() {
     x = important_points()
     y = sapply(x, function(x) {f1Score(df()[[input$true_variable]], df()[[input$predicted_scores]], cutoff=x)} ) # obtain f1 score vector
@@ -283,4 +314,5 @@ server <- function(input, output) {
   output$precision_recall <- renderPlot({plot_precision_recall()})
   output$nne_recall <- renderPlot({plot_nne_recall()})
   output$f1_score <- renderPlot({plot_f1_score()})
+  output$hist_pred <- renderPlot({plot_hist_pred()})
 }

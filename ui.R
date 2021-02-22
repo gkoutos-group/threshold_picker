@@ -109,7 +109,12 @@ ui <- fluidPage(
                                            dblclick = "plot_dblclick",
                                            hover = "plot_hover",
                                            brush = "plot_brush"
-                                )
+                                ),
+                                plotOutput("hist_pred",
+                                           click = "plot_click",
+                                           dblclick = "plot_dblclick",
+                                           hover = "plot_hover",
+                                           brush = "plot_brush")
                     ))),
                   tabPanel("Summary", helpText("Basic info"),
                            verbatimTextOutput("info"),
