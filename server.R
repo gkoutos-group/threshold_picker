@@ -187,14 +187,14 @@ server <- function(input, output) {
     e$internals_class___ <- as.character(e$internals_class___)
     
     e$internals_class___ <- paste(e$internals_class___, e$internals___, sep="")
-    e$internals_class___ <- as.factor(e$internals_class___)
+    e$internals_class___ <- factor(e$internals_class___, levels=c("FN", "FP", "TN", "TP"))
     
     p <- ggplot(e, aes_string(x=input$predicted_scores,
                               fill="internals_class___")) +
-        geom_histogram(position="identity", bins=20) + 
+        geom_histogram(position="stack", bins=input$hist_bins) + 
         ggtitle("Histogram of predicted scores") + labs(x="Predicted scores", fill="Class") + 
         geom_vline(xintercept=input$threshold_slider, color="red") +
-        theme_bw() + xlim(0, 1)
+        theme_bw() + xlim(0, 1) + scale_fill_discrete(drop=FALSE)
     
     return(p)
   }

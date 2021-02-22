@@ -71,7 +71,7 @@ ui <- fluidPage(
       
       #numericInput("threshold_input", label = h3("Threshold value"),
       #             value = threshold_obtained)
-    ),
+    width=3),
     
     mainPanel(
       span(textOutput("dataset_info"), style="color:blue", align='right'),
@@ -131,8 +131,16 @@ ui <- fluidPage(
                            
                            helpText('Performance Metrics'),
                            verbatimTextOutput('metrics'),
-                           HTML("* ModelMetrics 1.2.2 has an issue with TNR calculation, this could slightly reduce the calculated value."))
-      ))
+                           HTML("* ModelMetrics 1.2.2 has an issue with TNR calculation, this could slightly reduce the calculated value.")),
+                  tabPanel("Settings", 
+                           fluidRow(
+                              splitLayout(cellWidths = c("50%", "50%"),
+                                          numericInput("hist_bins", 
+                                                       label = "Number of Histogram bins",
+                                                       value = 30, min=1, max=1000)
+                              )),)
+      ),
+      width=9)
   ),
   
   hr(),
