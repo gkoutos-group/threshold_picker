@@ -144,6 +144,5 @@ ui <- fluidPage(
   ),
   
   hr(),
-  HTML('<b>Disclaimer: This is a prototype tool to support research. Validate your findings. </b><br/>This code is currently private and may be accessed under request to <a href="mailto:V.RothCardoso@bham.ac.uk">V.RothCardoso@bham.ac.uk</a>.')
-  # 2021/02/01 current repository: https://github.com/gkoutos-group/threshold_picker
+  HTML('<b>Disclaimer: This is a prototype tool to support research. Validate your findings. </b><br/>This code is public on <a href="https://github.com/gkoutos-group/threshold_picker/">https://github.com/gkoutos-group/threshold_picker/</a>, for details contact <a href="mailto:V.RothCardoso@bham.ac.uk">V.RothCardoso@bham.ac.uk</a>.')
 )
