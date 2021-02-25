@@ -1,5 +1,11 @@
 # Threshold Picker
 
+[![DOI](https://zenodo.org/badge/334302729.svg)](https://zenodo.org/badge/latestdoi/334302729)
+
+Author: Victor Roth Cardoso - V.RothCardoso@bham.ac.uk
+
+E-mail me suggestions, comments and issues.
+
 ## Introduction
 
 This is a prototype to evaluate the different threshold points for an AUC curve. It is also available at https://vroth.shinyapps.io/thresholdloss/.
@@ -23,7 +29,3 @@ The costs could be obtained from different ways. It is suggest hypothesizing usi
 You can upload your model output file. This file must be a .csv file with comma-separated values. 
 The files requires a column with the `true label` of each data point (the classes must be translated to 0 or 1) and a `prediction score` column with values between 0 and 1.
 
-
-## Trouble? Suggestions? Comments?
-
-Please e-mail V.RothCardoso < at > bham.ac.uk
