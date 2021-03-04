@@ -15,6 +15,8 @@ ui <- fluidPage(
       
       textInput("true_variable", label="True class column name:", value="class"),
       
+      textInput("true_variable_label", label="Positive class value:", value="1"),
+      
       textInput("predicted_scores", label="Predicted score column name:", value="prediction"),
       
       helpText("Select a threshold value"),

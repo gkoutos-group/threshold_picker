@@ -9,10 +9,12 @@ server <- function(input, output) {
   # returns the dataset
   df <- reactive({
     if(is.null(input$file_input$datapath)) {
-      read.csv('sample_dataset.csv')
+      tdf <- read.csv('sample_dataset.csv')
     } else {
-      read.csv(input$file_input$datapath)
+      tdf <- read.csv(input$file_input$datapath)
     }
+    tdf[[input$true_variable]] <- as.integer(tdf[[input$true_variable]] == input$true_variable_label)
+    return(tdf)
   })
   
   # dummy function to obtain the current execution time as timestamp followed by ms
