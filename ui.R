@@ -196,11 +196,9 @@ ui <- fluidPage(
     width = 480,
     draggable = T,
     wellPanel(
-      helpText("Select a threshold value"),
-      
       sliderInput(
         "threshold_slider",
-        label = "Range of interest:",
+        label = "Select a threshold value:",
         min = 0,
         max = 1,
         value = threshold_default
