@@ -30,7 +30,7 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, boo
   model2_roc <- roc(df[[true_label]], df[[model2risk]], direction='<', levels=c(0, 1), plot=F)
   ci_obj_m2 <- fix_ci_df__(ci.se(model2_roc, specificities=spec_roc, boot.n=boot.n))
   
-  p <- ggroc(list(model1=model1_roc, model2=model2_roc)) + 
+  p <- ggroc(list(model1=model1_roc, model2=model2_roc), legacy.axes=T) + 
     theme_classic() + 
     geom_abline(slope=1, intercept = 1, linetype = "dashed", alpha=0.7, color = "grey") + 
     coord_equal() + 
@@ -40,7 +40,7 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, boo
   #add the cis
   p <- p + geom_ribbon(data=ci_obj_m1, aes(x=sp, ymin=se.low, ymax=se.high), fill=2, alpha=0.2, inherit.aes=F)
   p <- p + geom_ribbon(data=ci_obj_m2, aes(x=sp, ymin=se.low, ymax=se.high), fill=4, alpha=0.2, inherit.aes=F)
-  p <- p + xlab('Specificity') + ylab('Sensitivity')
+  p <- p + xlab('1 - Specificity') + ylab('Sensitivity')
   
   return(p)
 }
@@ -74,12 +74,16 @@ plot_reclassification <- function(tab, low="#fee8c8", high="#aeeb34", title='Rec
   return(p)
 }
 
-df <- read.csv('C:\\Users\\vroth\\Desktop\\UoB material\\20210310_ecg_model\\20210311_nn_clinical_valid_selection_reclassification.csv')
-a <- compare_aucs(df, 'real', 'clinical', 'dnn', boot.n=5)
-r <- compare_models(df, 'real', 'clinical', 'dnn', cutoff=c(0, 0.1, 0.2, 0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))
-plot_reclassification(r$tab_both, title='Overall reclassification')
-plot(a)
+if(F) {
+  df <- read.csv('C:\\Users\\vroth\\Desktop\\UoB material\\20210310_ecg_model\\20210311_nn_clinical_valid_selection_reclassification.csv')
+  a <- compare_aucs(df, 'real', 'clinical', 'dnn', boot.n=5)
+  r <- compare_models(df, 'real', 'clinical', 'dnn', cutoff=c(0, 0.1, 0.2, 0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))
+  plot_reclassification(r$tab_both, title='Overall reclassification')
+  plot(a)
+  
+  model1_roc <- roc(df$real, df$dnn, direction='<', levels=c(0, 1), plot=F)
+  ci.auc(model1_roc)
+}
 
 
-library(tidyverse)
 

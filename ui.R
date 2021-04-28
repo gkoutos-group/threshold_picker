@@ -111,6 +111,7 @@ ui <- fluidPage(
                column(
                  width = 4,
                  helpText("Basic info"),
+                 verbatimTextOutput("auc_and_ci"),
                  verbatimTextOutput("info"),
                  
                  fluidRow(

@@ -125,26 +125,30 @@ server <- function(input, output, session) {
     return(confusionMatrix(df()[[input$true_variable]], predict_for_threshold(threshold)))
   }
   
+  # base plot so doesnt recalculate when moving cutoff
+  base_auc_plot <- reactive({
+    set.seed(input$boot.seed)
+    model1_roc <- roc(df()[[input$true_variable]], df()[[input$predicted_scores]], direction='<', levels=c(0, 1), plot=F)
+    ci_obj_m1 <- fix_ci_df__(ci.se(model1_roc, specificities=seq(0, 1, 0.01), boot.n=input$boot.n))
+    
+    p <- ggroc(list(model1=model1_roc), legacy.axes=T) + 
+      theme_classic() + 
+      geom_abline(slope=1, intercept = 1, linetype = "dashed", alpha=0.7, color = "grey") + 
+      coord_equal() + 
+      scale_color_manual(labels = c("Model"), values = c(2)) +
+      labs(color="Model")
+    
+    p <- p + xlab('1 - Specificity') + ylab('Sensitivity')
+    p <- p + geom_ribbon(data=ci_obj_m1, aes(x=sp, ymin=se.low, ymax=se.high), fill=2, alpha=0.2, inherit.aes=F)
+    return(p)
+  })
+  
   # plot the auc
   plot_auc <- function() {
-    roc_full_resolution <-
-      roc(df()[[input$true_variable]],
-          df()[[input$predicted_scores]],
-          levels = c(0, 1),
-          direction = '<')
-    #rounded_scores <- round(df[[predicted_scores]], digits=1)
-    #roc_rounded <- roc(df[[true_variable]], rounded_scores)
-    p <- plot(roc_full_resolution,
-              main = 'AUC',
-              print.auc = TRUE)
-    #lines(roc_rounded, col="red", type='b')
-    #text(0.4, 0.43, labels=sprintf("AUC: %0.3f", auc(roc_rounded)), col="red")
-    points(
-      x = threshold_to_specificity(),
-      y = threshold_to_sensitivity(),
-      pch = 17,
-      col = 'red'
-    )
+    p <- base_auc_plot() +
+      geom_point(aes(x=threshold_to_specificity(), 
+                     y=threshold_to_sensitivity()), 
+                 colour="blue")
     return(p)
   }
   
@@ -368,6 +372,13 @@ server <- function(input, output, session) {
     return(p)
   }
   
+  get_auc_ci <- function() {
+    roc <- roc(df()[[input$true_variable]], df()[[input$predicted_scores]], direction='<', levels=c(0, 1), plot=F)
+    set.seed(input$boot.seed)
+    ci <- ci.auc(roc, boot.n=input$boot.n)
+    return(paste0('AUC: ', round(ci[2], 5), ' [95% CI ', round(ci[1], 5), '-', round(ci[3], 5), ']'))
+  }
+  
   get_basic_info <- function() {
     return(paste(
       paste('Threshold:', input$threshold_slider),
@@ -489,6 +500,9 @@ server <- function(input, output, session) {
   # info/text
   output$dataset_info <- renderText({
     loaded_file_output()
+  })
+  output$auc_and_ci <- renderText({
+    get_auc_ci()
   })
   output$info <- renderText({
     get_basic_info()
