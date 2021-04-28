@@ -21,7 +21,8 @@ compare_models <- function(df, true_label, model1risk, model2risk, cutoff=c(0, 0
 }
 
 
-compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, spec_roc=seq(0, 1, 0.01)) {
+compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, boot.seed=123, spec_roc=seq(0, 1, 0.01)) {
+  set.seed(boot.seed)
   # first model
   model1_roc <- roc(df[[true_label]], df[[model1risk]], direction='<', levels=c(0, 1), plot=F)
   ci_obj_m1 <- fix_ci_df__(ci.se(model1_roc, specificities=spec_roc, boot.n=boot.n))
@@ -29,7 +30,12 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, spe
   model2_roc <- roc(df[[true_label]], df[[model2risk]], direction='<', levels=c(0, 1), plot=F)
   ci_obj_m2 <- fix_ci_df__(ci.se(model2_roc, specificities=spec_roc, boot.n=boot.n))
   
-  p <- ggroc(list(model1=model1_roc, model2=model2_roc)) + theme_minimal() + geom_abline(slope=1, intercept = 1, linetype = "dashed", alpha=0.7, color = "grey") + coord_equal()
+  p <- ggroc(list(model1=model1_roc, model2=model2_roc)) + 
+    theme_classic() + 
+    geom_abline(slope=1, intercept = 1, linetype = "dashed", alpha=0.7, color = "grey") + 
+    coord_equal() + 
+    scale_color_manual(labels = c("Previous model", "Updated model"), values = c(2, 4)) +
+    labs(color="Model")
   
   #add the cis
   p <- p + geom_ribbon(data=ci_obj_m1, aes(x=sp, ymin=se.low, ymax=se.high), fill=2, alpha=0.2, inherit.aes=F)
@@ -41,13 +47,13 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, spe
 
 plot_reclassification <- function(tab, low="#fee8c8", high="#aeeb34", title='Reclassification') {
   ## reshape data (tidy/tall form)
-  dat2 <- as.data.frame(tab) %>%
-    as_tibble() %>%
-    rownames_to_column('Var1') %>%
+  dat <- as.data.frame(tab)
+  dat$Var1 <- rownames(tab)
+  
+  dat2 <- dat %>% as_tibble() %>%
     gather(Var2, value, -Var1)
   
   dat2$Var1 <- as.factor(dat2$Var1)
-  levels(dat2$Var1) <- rownames(dat)
   dat2$Var1 <- forcats::fct_rev(dat2$Var1)
   
   dat2$Var2 <- as.factor(dat2$Var2)
@@ -68,11 +74,11 @@ plot_reclassification <- function(tab, low="#fee8c8", high="#aeeb34", title='Rec
   return(p)
 }
 
-#df <- read.csv('C:\\Users\\vroth\\Desktop\\UoB material\\20210310_ecg_model\\20210311_nn_clinical_valid_selection_reclassification.csv')
-#a <- compare_aucs(df, 'real', 'clinical', 'dnn', boot.n=5)
-#r <- compare_models(df, 'real', 'clinical', 'dnn')
-#plot_reclassification(r$tab_both, title='Overall reclassification')
-#plot(a)
+df <- read.csv('C:\\Users\\vroth\\Desktop\\UoB material\\20210310_ecg_model\\20210311_nn_clinical_valid_selection_reclassification.csv')
+a <- compare_aucs(df, 'real', 'clinical', 'dnn', boot.n=5)
+r <- compare_models(df, 'real', 'clinical', 'dnn', cutoff=c(0, 0.1, 0.2, 0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))
+plot_reclassification(r$tab_both, title='Overall reclassification')
+plot(a)
 
 
 library(tidyverse)

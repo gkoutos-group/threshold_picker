@@ -5,21 +5,27 @@ library(PRROC)
 library(ggplot2)
 library(plyr)
 library(tidyverse)
+library(readxl)
 
 source(here::here('compare_models.R'))
-
 
 server <- function(input, output, session) {
   # returns the dataset
   df <- reactive({
     if (is.null(input$file_input$datapath)) {
       tdf <- read.csv('sample_dataset.csv')
+    } else if(grepl(".xls$|.xlsx$", input$file_input$datapath)) {
+      tdf <- read_excel(input$file_input$datapath, sheet=ifelse(input$sheet == "", 1, input$sheet))
     } else {
       tdf <- read.csv(input$file_input$datapath)
     }
     if(input$true_variable %in% colnames(tdf)) {
+      tdf <- tdf[!is.na(tdf[[input$true_variable]]), ]
       tdf[[input$true_variable]] <-
         as.integer(tdf[[input$true_variable]] == input$true_variable_label)
+      if(input$predicted_scores %in% colnames(tdf)) {
+        tdf <- tdf[!is.na(tdf[[input$predicted_scores]]), ]
+      }
     }
     return(tdf)
   })
@@ -474,9 +480,9 @@ server <- function(input, output, session) {
   
   loaded_file_output <- function() {
     if (is.null(input$file_input$datapath)) {
-      "Using sample data"
+      paste0("Using sample data with `", input$predicted_scores, "` scores.")
     } else {
-      paste("Using uploaded file:", input$file_input$name)
+      paste0("Using uploaded file ", input$file_input$name, " with `", input$predicted_scores, "` scores.")
     }
   }
   
@@ -537,15 +543,22 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "navbar", "Comparison")
   })
   
+  observeEvent(input$predicted_scores_swap, {
+    tmp <- input$predicted_scores
+    updateTextInput(session, "predicted_scores", value=input$predicted_scores_2)
+    updateTextInput(session, "predicted_scores_2", value=tmp)
+  })
+  
+  
   output$comparison_auc_plot <- renderPlot({
     if(input$use_predicted_2) {
-      compare_aucs(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2)
+      compare_aucs(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2, boot.n = input$boot.n, boot.seed = input$boot.seed)
     }
   })
   
   reclass_output <- reactive({
     if(input$use_predicted_2) {
-      r <- compare_models(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2, cutoff=as.numeric(unlist(strsplit(input$cutoffs, ', '))))
+      r <- compare_models(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2, cutoff=as.numeric(unlist(strsplit(input$cutoffs, ','))))
     } else {
       r <- NULL
     }

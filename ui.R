@@ -180,12 +180,16 @@ ui <- fluidPage(
                  helpText("Input file"),
                  fileInput(
                    "file_input",
-                   "Choose CSV File",
+                   "Choose CSV/XLS(X) File",
                    multiple = FALSE,
                    accept = c("text/csv",
                               "text/comma-separated-values,text/plain",
-                              ".csv")
+                              ".csv",
+                              ".xls",
+                              ".xlsx")
                  ),
+                 
+                 textInput("sheet", label = "If XLSX file, add sheet name:", value=""),
                  
                  textInput("true_variable", label = "True class column name:", value =
                              "class"),
@@ -195,18 +199,22 @@ ui <- fluidPage(
                  textInput("true_variable_label", label = "Positive class value:", value =
                              "1"),
                  
-                 textInput("predicted_scores", label = "Predicted score column name (model 1):", value =
+                 textInput("predicted_scores", label = "Predicted score column name (current model):", value =
                              "prediction"),
                  span(textOutput("predicted_scores_info"),
                       style = "color:red"),
                  
-                 checkboxInput("use_predicted_2", "Compare to another model?", value = FALSE),
+                 fluidRow(column(10,
+                                 checkboxInput("use_predicted_2", "Compare to another model?", value = FALSE)),
+                          column(2,
+                                 actionButton("predicted_scores_swap", "Swap"))),
                  
                  textInput("predicted_scores_2", 
-                           label="Predicted score column name (model 2):",
+                           label="Predicted score column name (updated model):",
                            value="prediction2"),
                  span(textOutput("predicted_scores_2_info"),
-                      style = "color:red")
+                      style = "color:red"),
+                 
                ),
                column(
                  4,
@@ -279,6 +287,9 @@ ui <- fluidPage(
                               min=1,
                               value=10,
                               max=500),
+                 numericInput("boot.seed",
+                              label = "Bootstrapping seed",
+                              value=123),
                  textInput("cutoffs",
                            label="Cutt-offs for reclassification metrics",
                            value='0, 0.1, 0.3, 1')
