@@ -4,8 +4,12 @@ library(ModelMetrics)
 library(PRROC)
 library(ggplot2)
 library(plyr)
+library(tidyverse)
 
-server <- function(input, output) {
+source(here::here('compare_models.R'))
+
+
+server <- function(input, output, session) {
   # returns the dataset
   df <- reactive({
     if (is.null(input$file_input$datapath)) {
@@ -13,9 +17,31 @@ server <- function(input, output) {
     } else {
       tdf <- read.csv(input$file_input$datapath)
     }
-    tdf[[input$true_variable]] <-
-      as.integer(tdf[[input$true_variable]] == input$true_variable_label)
+    if(input$true_variable %in% colnames(tdf)) {
+      tdf[[input$true_variable]] <-
+        as.integer(tdf[[input$true_variable]] == input$true_variable_label)
+    }
     return(tdf)
+  })
+  
+  check_column_in_df <- function(c) {
+    if(!c %in% colnames(df())) {
+      "Invalid column"
+    }
+  }
+  
+  output$true_variable_info <- renderText({
+    check_column_in_df(input$true_variable)
+  })
+  
+  output$predicted_scores_info <- renderText({
+    check_column_in_df(input$predicted_scores)
+  })
+  
+  output$predicted_scores_2_info <- renderText({
+    if(input$use_predicted_2) {
+      check_column_in_df(input$predicted_scores_2)
+    }
   })
   
   # dummy function to obtain the current execution time as timestamp followed by ms
@@ -497,5 +523,64 @@ server <- function(input, output) {
   })
   output$hist_pred <- renderPlot({
     plot_hist_pred()
+  })
+  
+  
+  js$disableTab('Comparison')
+  observeEvent(input$use_predicted_2, {
+    if(input$use_predicted_2) {
+      js$enableTab("Comparison")
+    } else {
+      js$disableTab("Comparison")
+    }
+    # switch to tab2
+    updateTabsetPanel(session, "navbar", "Comparison")
+  })
+  
+  output$comparison_auc_plot <- renderPlot({
+    if(input$use_predicted_2) {
+      compare_aucs(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2)
+    }
+  })
+  
+  reclass_output <- reactive({
+    if(input$use_predicted_2) {
+      r <- compare_models(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2, cutoff=as.numeric(unlist(strsplit(input$cutoffs, ', '))))
+    } else {
+      r <- NULL
+    }
+    return(r)
+  })
+  
+  output$comparison_heatmap_both <- renderPlot({
+    plot_reclassification(reclass_output()$tab_both, title='Overall reclassification')
+  })
+  
+  output$comparison_heatmap_present <- renderPlot({
+    plot_reclassification(reclass_output()$tab_present, title='Present reclassification')
+  })
+  
+  output$comparison_heatmap_absent <- renderPlot({
+    plot_reclassification(reclass_output()$tab_absent, title='Absent reclassification')
+  })
+  
+  output$comparison_table_absent <- renderTable({
+    reclass_output()$tab_absent
+  }, rownames=T)
+  
+  output$comparison_table_present <- renderTable({
+    reclass_output()$tab_present
+  }, rownames=T)
+  
+  output$comparison_nri_categorical_output <- renderText({
+    paste0(reclass_output()$nri_cat$value, paste0(' [', reclass_output()$nri_cat$ci95_low, '-', reclass_output()$nri_cat$ci95_high, ']'), paste0(' (', reclass_output()$nri_cat$pval, ')'))
+  })
+  
+  output$comparison_nri_numerical_output <- renderText({
+    paste0(reclass_output()$nri_cont$value, paste0(' [', reclass_output()$nri_cont$ci95_low, '-', reclass_output()$nri_cont$ci95_high, ']'), paste0(' (', reclass_output()$nri_cont$pval, ')'))
+  })
+  
+  output$comparison_idi_output <- renderText({
+    paste0(reclass_output()$idi$value, paste0(' [', reclass_output()$idi$ci95_low, '-', reclass_output()$idi$ci95_high, ']'), paste0(' (', reclass_output()$idi$pval, ')'))
   })
 }

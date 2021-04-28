@@ -1,8 +1,48 @@
 library(shiny)
+library(shinyjs)
 
 threshold_default <- 0.5
 
+
+jscode_comparison_enable_disable <- "
+shinyjs.disableTab = function(name) {
+  var tab = $('.nav li a[data-value=' + name + ']');
+  tab.bind('click.tab', function(e) {
+    e.preventDefault();
+    return false;
+  });
+  tab.addClass('disabled');
+}
+
+shinyjs.disableInput = function(name) {
+  var tab = $('.nav li a[data-value=' + name + ']');
+  tab.bind('click.tab', function(e) {
+    e.preventDefault();
+    return false;
+  });
+  tab.addClass('disabled');
+}
+
+shinyjs.enableTab = function(name) {
+  var tab = $('.nav li a[data-value=' + name + ']');
+  tab.unbind('click.tab');
+  tab.removeClass('disabled');
+}
+"
+
+css <- "
+.nav li a.disabled {
+  background-color: #aaa !important;
+  color: #333 !important;
+  cursor: not-allowed !important;
+  border-color: #aaa !important;
+}"
+
 ui <- fluidPage(
+  useShinyjs(),
+  extendShinyjs(text = jscode_comparison_enable_disable, functions = c('disableTab','enableTab')),
+  inlineCSS(css),
+  
   titlePanel("Threshold picker"),
   
   span(
@@ -98,6 +138,41 @@ ui <- fluidPage(
                  )
                )
              )),
+    tabPanel("Comparison",
+             
+             fluidRow(
+               column(width = 8,
+                      fluidRow(
+                        splitLayout(
+                          cellWidths = c("50%", "50%"),
+                          plotOutput("comparison_auc_plot"),
+                          plotOutput("comparison_heatmap_both")
+                        ),
+                        splitLayout(
+                          cellWidths = c("50%", "50%"),
+                          plotOutput("comparison_heatmap_absent"),
+                          plotOutput("comparison_heatmap_present")
+                        ),
+                        helpText("Present (positive) labels (updated model on columns)"),
+                        tableOutput("comparison_table_present"),
+                        
+                        helpText("Absent (negative) labels (updated model on columns)"),
+                        tableOutput("comparison_table_absent")
+                      )),
+               column(
+                 width = 4,
+                 helpText("Comparison outputs"),
+                 
+                 helpText("NRI Categorical [95% CI] (p-value)"),
+                 verbatimTextOutput("comparison_nri_categorical_output"),
+                 
+                 helpText("NRI Numerical [95% CI] (p-value)"),
+                 verbatimTextOutput("comparison_nri_numerical_output"),
+                 
+                 helpText("IDI [95% CI] (p-value)"),
+                 verbatimTextOutput("comparison_idi_output")
+               )
+             )),
     tabPanel("Input file & settings",
              fluidRow(
                column(
@@ -114,12 +189,24 @@ ui <- fluidPage(
                  
                  textInput("true_variable", label = "True class column name:", value =
                              "class"),
+                 span(textOutput("true_variable_info"),
+                      style = "color:red"),
                  
                  textInput("true_variable_label", label = "Positive class value:", value =
                              "1"),
                  
-                 textInput("predicted_scores", label = "Predicted score column name:", value =
-                             "prediction")
+                 textInput("predicted_scores", label = "Predicted score column name (model 1):", value =
+                             "prediction"),
+                 span(textOutput("predicted_scores_info"),
+                      style = "color:red"),
+                 
+                 checkboxInput("use_predicted_2", "Compare to another model?", value = FALSE),
+                 
+                 textInput("predicted_scores_2", 
+                           label="Predicted score column name (model 2):",
+                           value="prediction2"),
+                 span(textOutput("predicted_scores_2_info"),
+                      style = "color:red")
                ),
                column(
                  4,
@@ -185,7 +272,16 @@ ui <- fluidPage(
                      min = 1,
                      max = 1000
                    )
-                 )
+                 ),
+                 helpText("Comparison settings"),
+                 numericInput("boot.n",
+                              label = "Number of bootstraps",
+                              min=1,
+                              value=10,
+                              max=500),
+                 textInput("cutoffs",
+                           label="Cutt-offs for reclassification metrics",
+                           value='0, 0.1, 0.3, 1')
                )
              ))
   ),
@@ -211,6 +307,6 @@ ui <- fluidPage(
   
   hr(),
   HTML(
-    '<b>Disclaimer: This is a prototype tool to support research. Validate your findings. </b><br/>This code is public on <a href="https://github.com/gkoutos-group/threshold_picker/">https://github.com/gkoutos-group/threshold_picker/</a>, for details contact <a href="mailto:V.RothCardoso@bham.ac.uk">V.RothCardoso@bham.ac.uk</a>.'
+    '<b>Disclaimer: This is a prototype tool to support research. Validate your findings. </b><br/>This code is public on <a href="https://github.com/gkoutos-group/threshold_picker/">https://github.com/gkoutos-group/threshold_picker/</a>. For details contact <a href="mailto:V.RothCardoso@bham.ac.uk">V.RothCardoso@bham.ac.uk</a>.'
   )
 )
