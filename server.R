@@ -133,10 +133,12 @@ server <- function(input, output, session) {
     
     p <- ggroc(list(model1=model1_roc), legacy.axes=T) + 
       theme_classic() + 
-      geom_abline(slope=1, intercept = 1, linetype = "dashed", alpha=0.7, color = "grey") + 
+      geom_abline(slope=1, intercept = 0, linetype = "dashed", alpha=0.7, color = "grey") + 
       coord_equal() + 
       scale_color_manual(labels = c("Model"), values = c(2)) +
       labs(color="Model")
+    
+    ci_obj_m1$sp <- 1-ci_obj_m1$sp
     
     p <- p + xlab('1 - Specificity') + ylab('Sensitivity')
     p <- p + geom_ribbon(data=ci_obj_m1, aes(x=sp, ymin=se.low, ymax=se.high), fill=2, alpha=0.2, inherit.aes=F)
@@ -146,7 +148,7 @@ server <- function(input, output, session) {
   # plot the auc
   plot_auc <- function() {
     p <- base_auc_plot() +
-      geom_point(aes(x=threshold_to_specificity(), 
+      geom_point(aes(x=1-threshold_to_specificity(), 
                      y=threshold_to_sensitivity()), 
                  colour="blue")
     return(p)

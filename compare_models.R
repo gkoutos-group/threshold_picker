@@ -32,11 +32,13 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, boo
   
   p <- ggroc(list(model1=model1_roc, model2=model2_roc), legacy.axes=T) + 
     theme_classic() + 
-    geom_abline(slope=1, intercept = 1, linetype = "dashed", alpha=0.7, color = "grey") + 
+    geom_abline(slope=1, intercept = 0, linetype = "dashed", alpha=0.7, color = "grey") + 
     coord_equal() + 
     scale_color_manual(labels = c("Previous model", "Updated model"), values = c(2, 4)) +
     labs(color="Model")
   
+  ci_obj_m1$sp <- 1-ci_obj_m1$sp
+  ci_obj_m2$sp <- 1-ci_obj_m2$sp
   #add the cis
   p <- p + geom_ribbon(data=ci_obj_m1, aes(x=sp, ymin=se.low, ymax=se.high), fill=2, alpha=0.2, inherit.aes=F)
   p <- p + geom_ribbon(data=ci_obj_m2, aes(x=sp, ymin=se.low, ymax=se.high), fill=4, alpha=0.2, inherit.aes=F)
