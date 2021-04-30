@@ -134,9 +134,8 @@ server <- function(input, output, session) {
     p <- ggroc(list(model1=model1_roc), legacy.axes=T) + 
       theme_classic() + 
       geom_abline(slope=1, intercept = 0, linetype = "dashed", alpha=0.7, color = "grey") + 
-      coord_equal() + 
-      scale_color_manual(labels = c("Model"), values = c(2)) +
-      labs(color="Model")
+      coord_equal()  +
+      theme(legend.position = "none") 
     
     ci_obj_m1$sp <- 1-ci_obj_m1$sp
     
