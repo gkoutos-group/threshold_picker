@@ -39,10 +39,11 @@ css <- "
 }"
 
 ui <- fluidPage(
+  withMathJax(),
   useShinyjs(),
   extendShinyjs(text = jscode_comparison_enable_disable, functions = c('disableTab','enableTab')),
   inlineCSS(css),
-  
+
   titlePanel("Threshold picker"),
   
   span(
@@ -296,7 +297,40 @@ ui <- fluidPage(
                            label="Cutt-offs for reclassification metrics",
                            value='0, 0.1, 0.3, 0.5, 0.7, 0.9, 1')
                )
-             ))
+             )),
+    tabPanel("Help",
+             
+             HTML('<h3>Basic metrics</h3><br/>'),
+             helpText('\\(Accuracy = \\frac{TP + TN} {TP + TN + FP + FN}\\)'),
+             helpText('\\(PPV = \\frac{TP} {TP + FP}\\)'),
+             helpText('\\(NPV = \\frac{TN} {TN + FN}\\)'),
+             helpText('\\(TPR = \\frac{TP} {TP + FN}\\)'),
+             helpText('\\(TNR = \\frac{TN} {TN + FP}\\)'),
+             helpText('\\(F_{1} score = 2 \\cdot \\frac{PPV \\cdot TPR} {PPV + TPR}\\)'),
+             HTML('The range of most metrics is 0 to 1. The higher the value for most metrics the best they are.<br/>'),
+             HTML('In the case of AUC, a value around 0.5 means that the model is not able to separate the samples. A value of 1 indicates perfect model.<br/>'),
+             HTML('Information about these metrics can be found at <a href="https://en.wikipedia.org/wiki/Confusion_matrix">Wikipedia</a>.<br/>'),
+             
+             HTML('<h3>Diagnostic Odds Ratio (DOR)</h3><br/>'),
+             helpText('\\(DOR = \\frac{\\left( \\cfrac{TP}{FN} \\right)} {\\left( \\cfrac{FP}{TN} \\right)}\\)'),
+             HTML('<i>"DOR depends significantly on the sensitivity and specificity of a test. A test with high specificity and sensitivity with low rate of false positives and false negatives has high DOR. With the same sensitivity of the test, DOR increases with the increase of the test specificity. For example, a test with sensitivity > 90% and specificity of 99% has a DOR greater than 500."</i> - <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4975285/">Ana-Maria Simundic. Measures of Diagnostic Accuracy: Basic Definitions</a>.<br/>'),
+             
+             HTML('<h3>AUC confidence interval</h3><br/>'),
+             HTML('The confidence interval is calculated with stratified boostrap replicates. <a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-12-77">Robin et al. pROC: an open-source package for R and S+ to analyze and compare ROC curves</a><br/>'),
+             
+             HTML('<h3>Comparison of models</h3><br/>'),
+             HTML('More details about Net Reclassification Improvement (NRI) can be found here: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3918180/">Kerr et al. Net Reclassification Indices for Evaluating Risk-Prediction Instruments: A Critical Review</a><br/>'),
+             HTML('More details about Integrated Discrimination Improvement (IDI) can be found here: <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.2929">Pencina et al. Evaluating the added predictive ability of a new marker: From area under the ROC curve to reclassification and beyond</a><br/>'),
+             
+             HTML('<h3>R Packages used</h3><br/>'),
+             HTML('<i>shiny, shinyjs, mathjaxr</i> (Web interface).<br/>'),
+             HTML('<i>readxl, plyr, tidyverse</i> (data loading and processing).<br/>'),
+             HTML('<i>ModelMetrics</i> (some metrics).<br/>'),
+             HTML('<i>pROC</i> (AUC and CI).<br/>'),
+             HTML('<i>PRROC</i> (Precision-Recall curves).<br/>'),
+             HTML('<i>Hmisc</i> (NRI/IDI).<br/>'),
+             HTML('<i>ggplot2, scales</i> (visualisation).<br/>'),
+             )
   ),
   
   absolutePanel(
