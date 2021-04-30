@@ -69,6 +69,11 @@ server <- function(input, output, session) {
                  input$threshold_slider))
   }
   
+  threshold_to_npv <- function() {
+    return(npv(df()[[input$true_variable]], df()[[input$predicted_scores]], cutoff =
+                 input$threshold_slider))
+  }
+  
   threshold_to_nne <- function() {
     return(1 / ppv(df()[[input$true_variable]], df()[[input$predicted_scores]], cutoff =
                      input$threshold_slider))
@@ -82,6 +87,11 @@ server <- function(input, output, session) {
   threshold_to_specificity <- function() {
     return(tnr(df()[[input$true_variable]], df()[[input$predicted_scores]], cutoff =
                  input$threshold_slider))
+  }
+  
+  threshold_to_dor <- function() {
+    cm <- confusion_matrix(input$threshold_slider)
+    return((cm[2,2]/cm[1,2])/(cm[2,1]/cm[1,1]))
   }
   
   threshold_to_f1score <- function() {
@@ -407,6 +417,10 @@ server <- function(input, output, session) {
           threshold_to_precision()
       ),
       paste(
+        'Negative Predictive Value (NPV):',
+        threshold_to_npv()
+      ),
+      paste(
         'Sensitivity (TPR, Recall, Probability of detection, Power):',
         threshold_to_sensitivity()
       ),
@@ -414,6 +428,10 @@ server <- function(input, output, session) {
         'Specificity (TNR, Selectivity):',
         threshold_to_specificity(),
         "*"
+      ),
+      paste(
+        'Diagnostic Odds Ratio (DOR):',
+        threshold_to_dor()
       ),
       paste('F-1 score:', threshold_to_f1score()),
       sep = '\n'
