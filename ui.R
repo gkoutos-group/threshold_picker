@@ -282,7 +282,7 @@ ui <- fluidPage(
                      max = 1000
                    )
                  ),
-                 helpText("Comparison settings"),
+                 helpText("Analysis settings"),
                  numericInput("boot.n",
                               label = "Number of bootstraps",
                               min=1,
@@ -291,9 +291,10 @@ ui <- fluidPage(
                  numericInput("boot.seed",
                               label = "Bootstrapping seed",
                               value=123),
+                 helpText("Comparison settings"),
                  textInput("cutoffs",
                            label="Cutt-offs for reclassification metrics",
-                           value='0, 0.1, 0.3, 1')
+                           value='0, 0.1, 0.3, 0.5, 0.7, 0.9, 1')
                )
              ))
   ),
