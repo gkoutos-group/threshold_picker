@@ -23,7 +23,7 @@ compare_models <- function(df, true_label, model1risk, model2risk, cutoff=c(0, 0
 }
 
 
-compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, boot.seed=123, spec_roc=seq(0, 1, 0.01)) {
+compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, boot.seed=123, spec_roc=seq(0, 1, 0.01), ci_method=c('delong')) {
   # first model
   set.seed(boot.seed)
   model1_roc <- roc(df[[true_label]], df[[model1risk]], direction='<', levels=c(0, 1), plot=F)
@@ -48,12 +48,15 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, boo
   p <- p + xlab('1 - Specificity') + ylab('Sensitivity')
   
   set.seed(boot.seed)
-  model_compar <- roc.test(model1_roc, model2_roc, 
-                           method=c("delong", "bootstrap", "venkatraman", "sensitivity", "specificity"), 
-                           sensitivity = NULL, specificity = NULL, 
-                           alternative = c("two.sided", "less", "greater"),
-                           paired=NULL, reuse.auc=TRUE, boot.n=boot.n, boot.stratified=TRUE,
-                           ties.method="first", progress='none',
+  model_compar <- roc.test(model1_roc, 
+                           model2_roc, 
+                           method=ci_method,
+                           alternative = c("two.sided"),
+                           paired=NULL, 
+                           reuse.auc=TRUE,
+                           boot.n=boot.n,
+                           boot.stratified=TRUE,
+                           progress='none',
                            parallel=FALSE)
   
   return(list(plot=p, pval=model_compar))

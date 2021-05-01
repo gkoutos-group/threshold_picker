@@ -320,6 +320,7 @@ ui <- fluidPage(
              HTML('The confidence interval is calculated with stratified boostrap replicates. <a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-12-77">Robin et al. pROC: an open-source package for R and S+ to analyze and compare ROC curves</a><br/>'),
              
              HTML('<h3>Comparison of models</h3><br/>'),
+             HTML('AUC statistical test is calculated using DeLong\'s method. <a href="https://pubmed.ncbi.nlm.nih.gov/3203132/">Delong et al. Comparing the areas under two or more correlated receiver operating characteristic curves: a nonparametric approach</a> method.<br/>'),
              HTML('More details about Net Reclassification Improvement (NRI) can be found here: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3918180/">Kerr et al. Net Reclassification Indices for Evaluating Risk-Prediction Instruments: A Critical Review</a><br/>'),
              HTML('More details about Integrated Discrimination Improvement (IDI) can be found here: <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.2929">Pencina et al. Evaluating the added predictive ability of a new marker: From area under the ROC curve to reclassification and beyond</a><br/>'),
              
