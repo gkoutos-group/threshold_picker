@@ -1,7 +1,9 @@
 library(pROC)
 library(scales)
 library(ggplot2)
+library(tidyverse)
 library(here)
+
 
 source(here::here('reclassification.R'))
 
@@ -22,11 +24,12 @@ compare_models <- function(df, true_label, model1risk, model2risk, cutoff=c(0, 0
 
 
 compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, boot.seed=123, spec_roc=seq(0, 1, 0.01)) {
-  set.seed(boot.seed)
   # first model
+  set.seed(boot.seed)
   model1_roc <- roc(df[[true_label]], df[[model1risk]], direction='<', levels=c(0, 1), plot=F)
   ci_obj_m1 <- fix_ci_df__(ci.se(model1_roc, specificities=spec_roc, boot.n=boot.n))
   # second model
+  set.seed(boot.seed)
   model2_roc <- roc(df[[true_label]], df[[model2risk]], direction='<', levels=c(0, 1), plot=F)
   ci_obj_m2 <- fix_ci_df__(ci.se(model2_roc, specificities=spec_roc, boot.n=boot.n))
   
@@ -44,7 +47,16 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, boo
   p <- p + geom_ribbon(data=ci_obj_m2, aes(x=sp, ymin=se.low, ymax=se.high), fill=4, alpha=0.2, inherit.aes=F)
   p <- p + xlab('1 - Specificity') + ylab('Sensitivity')
   
-  return(p)
+  set.seed(boot.seed)
+  model_compar <- roc.test(model1_roc, model2_roc, 
+                           method=c("delong", "bootstrap", "venkatraman", "sensitivity", "specificity"), 
+                           sensitivity = NULL, specificity = NULL, 
+                           alternative = c("two.sided", "less", "greater"),
+                           paired=NULL, reuse.auc=TRUE, boot.n=boot.n, boot.stratified=TRUE,
+                           ties.method="first", progress='none',
+                           parallel=FALSE)
+  
+  return(list(plot=p, pval=model_compar))
 }
 
 plot_reclassification <- function(tab, low="#fee8c8", high="#aeeb34", title='Reclassification') {
@@ -81,7 +93,8 @@ if(F) {
   a <- compare_aucs(df, 'real', 'clinical', 'dnn', boot.n=5)
   r <- compare_models(df, 'real', 'clinical', 'dnn', cutoff=c(0, 0.1, 0.2, 0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))
   plot_reclassification(r$tab_both, title='Overall reclassification')
-  plot(a)
+  plot(a$plot)
+  print(a$pval)
   
   model1_roc <- roc(df$real, df$dnn, direction='<', levels=c(0, 1), plot=F)
   ci.auc(model1_roc)

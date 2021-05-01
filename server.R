@@ -582,10 +582,19 @@ server <- function(input, output, session) {
     updateTextInput(session, "predicted_scores_2", value=tmp)
   })
   
+  compare_aucs_reactive <- reactive({
+    return(compare_aucs(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2, boot.n = input$boot.n, boot.seed = input$boot.seed))
+  })
   
   output$comparison_auc_plot <- renderPlot({
     if(input$use_predicted_2) {
-      compare_aucs(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2, boot.n = input$boot.n, boot.seed = input$boot.seed)
+      compare_aucs_reactive()$plot
+    }
+  })
+  
+  output$comparison_aucs_text <- renderPrint({
+    if(input$use_predicted_2) {
+      compare_aucs_reactive()$pval
     }
   })
   

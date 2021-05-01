@@ -164,6 +164,7 @@ ui <- fluidPage(
                column(
                  width = 4,
                  helpText("Comparison outputs"),
+                 verbatimTextOutput('comparison_aucs_text'),
                  
                  helpText("NRI Categorical [95% CI] (p-value)"),
                  verbatimTextOutput("comparison_nri_categorical_output"),
