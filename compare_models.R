@@ -23,14 +23,17 @@ compare_models <- function(df, true_label, model1risk, model2risk, cutoff=c(0, 0
 }
 
 
-compare_aucs <- function(df, true_label, model1risk, model2risk, boot.n=100, boot.seed=123, spec_roc=seq(0, 1, 0.01), ci_method=c('delong')) {
+compare_aucs <- function(df, true_label, model1risk, model2risk, model2_label=NULL, boot.n=100, boot.seed=123, spec_roc=seq(0, 1, 0.01), ci_method=c('delong')) {
+  if(is.null(model2_label)) {
+    model2_label <- true_label
+  }
   # first model
   set.seed(boot.seed)
   model1_roc <- roc(df[[true_label]], df[[model1risk]], direction='<', levels=c(0, 1), plot=F)
   ci_obj_m1 <- fix_ci_df__(ci.se(model1_roc, specificities=spec_roc, boot.n=boot.n))
   # second model
   set.seed(boot.seed)
-  model2_roc <- roc(df[[true_label]], df[[model2risk]], direction='<', levels=c(0, 1), plot=F)
+  model2_roc <- roc(df[[model2_label]], df[[model2risk]], direction='<', levels=c(0, 1), plot=F)
   ci_obj_m2 <- fix_ci_df__(ci.se(model2_roc, specificities=spec_roc, boot.n=boot.n))
   
   p <- ggroc(list(model1=model1_roc, model2=model2_roc), legacy.axes=T) + 
