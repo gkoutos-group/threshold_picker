@@ -5,7 +5,7 @@ library(tidyverse)
 library(here)
 
 
-source(here::here('reclassification.R'))
+if(!exists("reclassification_returned", mode='function')) source(here::here('reclassification.R'))
 
 fix_ci_df__ <- function(ci_obj) {
   return(data.frame(sp = as.numeric(row.names(ci_obj)),
