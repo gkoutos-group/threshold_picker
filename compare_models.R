@@ -64,7 +64,7 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, model2_label=NU
   return(list(plot=p, pval=model_compar))
 }
 
-plot_reclassification <- function(tab, low="#fee8c8", high="#aeeb34", title='Reclassification', label_initial="Initial model", label_updated="Update model") {
+plot_reclassification <- function(tab, diagonal='#e1e6ed', low="#cedef5", high="#cef5db", title='Reclassification', label_initial="Initial model", label_updated="Update model") {
   ## reshape data (tidy/tall form)
   dat <- as.data.frame(tab)
   dat$Var1 <- rownames(tab)
@@ -78,17 +78,27 @@ plot_reclassification <- function(tab, low="#fee8c8", high="#aeeb34", title='Rec
   dat2$Var2 <- as.factor(dat2$Var2)
   dat2$Var2 <- forcats::fct_relevel(dat2$Var2, " % reclassified", after = Inf)
   
-  dat2$color <- ifelse((as.character(dat2$Var1) == as.character(dat2$Var2)) | dat2$Var2 == ' % reclassified', NA, dat2$value)
+  dat2$row <- ceil(seq(1:nrow(dat2)) / nrow(tab))
+  dat2$col <- (seq(1:42) - 1) %% 6 + 1
+  dat2$color <- ifelse(dat2$row < dat2$col, 'high', 'low')
+  
+  dat2$color <- ifelse((as.character(dat2$Var1) == as.character(dat2$Var2)), 'diagonal', dat2$color)
+  dat2$color <- ifelse(dat2$Var2 == ' % reclassified', NA, dat2$color)
+  
+  dat2$row <- NULL
+  dat2$col <- NULL
   
   ## plot data
   p <- ggplot(dat2, aes(Var2, Var1)) +
       geom_tile(aes(fill = color)) + 
-      scale_fill_gradient("", low = low, high = high, na.value = "white") +
+      scale_fill_manual(values = list(low=low, high=high, diagonal=diagonal), na.value="white") + 
+      #scale_fill_gradient("", low = low, high = high, na.value = "white") +
       geom_text(aes(label = round(value, 1))) +
       xlab(label_updated) +
       ylab(label_initial) + 
       scale_x_discrete(position = "top")  +
-      ggtitle(title) + theme_minimal()
+      ggtitle(title) + theme_minimal() + 
+      theme(legend.position="none")
   
   return(p)
 }

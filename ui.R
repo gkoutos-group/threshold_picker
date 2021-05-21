@@ -155,11 +155,12 @@ ui <- fluidPage(
                           plotOutput("comparison_heatmap_absent"),
                           plotOutput("comparison_heatmap_present")
                         ),
-                        helpText("Present (positive) labels (updated model on columns)"),
-                        tableOutput("comparison_table_present"),
                         
                         helpText("Absent (negative) labels (updated model on columns)"),
-                        tableOutput("comparison_table_absent")
+                        tableOutput("comparison_table_absent"),
+                        
+                        helpText("Present (positive) labels (updated model on columns)"),
+                        tableOutput("comparison_table_present")
                       )),
                column(
                  width = 4,
@@ -326,9 +327,16 @@ ui <- fluidPage(
              HTML('The confidence interval is calculated with stratified boostrap replicates. <a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-12-77">Robin et al. pROC: an open-source package for R and S+ to analyze and compare ROC curves</a><br/>'),
              
              HTML('<h3>Comparison of models</h3><br/>'),
+             HTML('The use of these functions will depend on the calibration of the model, as the distribution of predictions are compared.<br/>'),
              HTML('AUC statistical test is calculated using DeLong\'s method. <a href="https://pubmed.ncbi.nlm.nih.gov/3203132/">Delong et al. Comparing the areas under two or more correlated receiver operating characteristic curves: a nonparametric approach</a> method.<br/>'),
              HTML('More details about Net Reclassification Improvement (NRI) can be found here: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3918180/">Kerr et al. Net Reclassification Indices for Evaluating Risk-Prediction Instruments: A Critical Review</a><br/>'),
              HTML('More details about Integrated Discrimination Improvement (IDI) can be found here: <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.2929">Pencina et al. Evaluating the added predictive ability of a new marker: From area under the ROC curve to reclassification and beyond</a><br/>'),
+             
+             HTML('<h4>Heatmaps</h4><br/>'),
+             HTML("Grey indicate a region where the predictions of the models are similar.<br/>"),
+             HTML("Blue are regions where an increased number means the updated model performance is worse and green indicate regions where an increased number is better.<br/>"),
+             HTML("For controls (heatmap on the left), the lower the output prediction score the better, as the number of participants in the green region will increase (left of the diagonal means lower score in the updated than the initial model, these are controls, the lower the better).<br/>"),
+             HTML("For cases (heatmap on the right), the higher the output prediction score the better, as the number of participants in the green region will increase (right of the diagonal means higher score in the updated model than the initial model, these are cases, the higher the score the better).<br/>"),
              
              HTML('<h3>R Packages used</h3><br/>'),
              HTML('<i>shiny, shinyjs, mathjaxr</i> (Web interface).<br/>'),

@@ -9,7 +9,7 @@ library(readxl)
 
 source(here::here('compare_models.R'))
 
-if(!exists("reclassification_returned", mode='function')) source(here::here('single_model.R'))
+if(!exists(".base_auc_plot", mode='function')) source(here::here('single_model.R'))
 
 server <- function(input, output, session) {
   # returns the dataset
@@ -261,8 +261,11 @@ server <- function(input, output, session) {
   
   observeEvent(input$predicted_scores_swap, {
     tmp <- input$predicted_scores
+    tmp2 <- input$initial_model_label
     updateTextInput(session, "predicted_scores", value=input$predicted_scores_2)
+    updateTextInput(session, "initial_model_label", value=input$updated_model_label)
     updateTextInput(session, "predicted_scores_2", value=tmp)
+    updateTextInput(session, "updated_model_label", value=tmp2)
   })
   
   compare_aucs_reactive <- reactive({
@@ -295,16 +298,19 @@ server <- function(input, output, session) {
   
   output$comparison_heatmap_both <- renderPlot({
     plot_reclassification(reclass_output()$tab_both, title='Overall reclassification', 
+                          diagonal='#e1e6ed', low="#e1e6ed", high="#e1e6ed",
                           label_initial=input$initial_model_label, label_updated=input$updated_model_label)
   })
   
   output$comparison_heatmap_present <- renderPlot({
-    plot_reclassification(reclass_output()$tab_present, title='Present reclassification', 
+    plot_reclassification(reclass_output()$tab_present, title='Present reclassification',
+                          diagonal='#e1e6ed', low="#cef5db", high="#cedef5",
                           label_initial=input$initial_model_label, label_updated=input$updated_model_label)
   })
   
   output$comparison_heatmap_absent <- renderPlot({
     plot_reclassification(reclass_output()$tab_absent, title='Absent reclassification', 
+                          diagonal='#e1e6ed', low="#cedef5", high="#cef5db",
                           label_initial=input$initial_model_label, label_updated=input$updated_model_label)
   })
   
