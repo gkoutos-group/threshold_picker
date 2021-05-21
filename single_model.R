@@ -1,6 +1,8 @@
 
 library(ggplot2)
 library(ModelMetrics)
+library(PRROC)
+library(pROC)
 
 .get_number_predicted_positive <- function(df, input) {
   return(sum(df[[input$predicted_scores]] > input$threshold_slider))
