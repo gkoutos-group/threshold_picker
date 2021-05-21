@@ -266,7 +266,9 @@ server <- function(input, output, session) {
   })
   
   compare_aucs_reactive <- reactive({
-    return(compare_aucs(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2, boot.n = input$boot.n, boot.seed = input$boot.seed))
+    return(compare_aucs(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2, 
+                        boot.n = input$boot.n, boot.seed = input$boot.seed,
+                        label_initial=input$initial_model_label, label_updated=input$updated_model_label))
   })
   
   output$comparison_auc_plot <- renderPlot({
@@ -283,7 +285,8 @@ server <- function(input, output, session) {
   
   reclass_output <- reactive({
     if(input$use_predicted_2) {
-      r <- compare_models(df(), input$true_variable, input$predicted_scores, input$predicted_scores_2, cutoff=as.numeric(unlist(strsplit(input$cutoffs, ','))))
+      r <- compare_models(df(), input$true_variable, 
+                          input$predicted_scores, input$predicted_scores_2, cutoff=as.numeric(unlist(strsplit(input$cutoffs, ','))))
     } else {
       r <- NULL
     }
@@ -291,15 +294,18 @@ server <- function(input, output, session) {
   })
   
   output$comparison_heatmap_both <- renderPlot({
-    plot_reclassification(reclass_output()$tab_both, title='Overall reclassification')
+    plot_reclassification(reclass_output()$tab_both, title='Overall reclassification', 
+                          label_initial=input$initial_model_label, label_updated=input$updated_model_label)
   })
   
   output$comparison_heatmap_present <- renderPlot({
-    plot_reclassification(reclass_output()$tab_present, title='Present reclassification')
+    plot_reclassification(reclass_output()$tab_present, title='Present reclassification', 
+                          label_initial=input$initial_model_label, label_updated=input$updated_model_label)
   })
   
   output$comparison_heatmap_absent <- renderPlot({
-    plot_reclassification(reclass_output()$tab_absent, title='Absent reclassification')
+    plot_reclassification(reclass_output()$tab_absent, title='Absent reclassification', 
+                          label_initial=input$initial_model_label, label_updated=input$updated_model_label)
   })
   
   output$comparison_table_absent <- renderTable({

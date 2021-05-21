@@ -41,7 +41,7 @@ css <- "
 ui <- fluidPage(
   withMathJax(),
   useShinyjs(),
-  extendShinyjs(text = jscode_comparison_enable_disable, functions = c('disableTab','enableTab')),
+  extendShinyjs(text = jscode_comparison_enable_disable, functions = c('disableTab', 'enableTab')),
   inlineCSS(css),
 
   titlePanel("Threshold picker"),
@@ -206,6 +206,9 @@ ui <- fluidPage(
                              "prediction"),
                  span(textOutput("predicted_scores_info"),
                       style = "color:red"),
+                 textInput("initial_model_label", 
+                           label="Initial model label on plots:",
+                           value="Initial model"),
                  
                  fluidRow(column(10,
                                  checkboxInput("use_predicted_2", "Compare to another model?", value = FALSE)),
@@ -217,6 +220,9 @@ ui <- fluidPage(
                            value="prediction2"),
                  span(textOutput("predicted_scores_2_info"),
                       style = "color:red"),
+                 textInput("updated_model_label", 
+                           label="Updated model label on plots:",
+                           value="Updated model"),
                  
                ),
                column(

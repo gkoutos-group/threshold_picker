@@ -4,7 +4,6 @@ library(ggplot2)
 library(tidyverse)
 library(here)
 
-
 if(!exists("reclassification_returned", mode='function')) source(here::here('reclassification.R'))
 
 fix_ci_df__ <- function(ci_obj) {
@@ -23,7 +22,7 @@ compare_models <- function(df, true_label, model1risk, model2risk, cutoff=c(0, 0
 }
 
 
-compare_aucs <- function(df, true_label, model1risk, model2risk, model2_label=NULL, boot.n=100, boot.seed=123, spec_roc=seq(0, 1, 0.01), ci_method=c('delong')) {
+compare_aucs <- function(df, true_label, model1risk, model2risk, model2_label=NULL, boot.n=100, boot.seed=123, spec_roc=seq(0, 1, 0.01), ci_method=c('delong'), label_initial="Initial model", label_updated="Update model") {
   if(is.null(model2_label)) {
     model2_label <- true_label
   }
@@ -40,7 +39,7 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, model2_label=NU
     theme_classic() + 
     geom_abline(slope=1, intercept = 0, linetype = "dashed", alpha=0.7, color = "grey") + 
     coord_equal() + 
-    scale_color_manual(labels = c("Previous model", "Updated model"), values = c(2, 4)) +
+    scale_color_manual(labels = c(label_initial, label_updated), values = c(2, 4)) +
     labs(color="Model")
   
   ci_obj_m1$sp <- 1-ci_obj_m1$sp
@@ -65,7 +64,7 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, model2_label=NU
   return(list(plot=p, pval=model_compar))
 }
 
-plot_reclassification <- function(tab, low="#fee8c8", high="#aeeb34", title='Reclassification') {
+plot_reclassification <- function(tab, low="#fee8c8", high="#aeeb34", title='Reclassification', label_initial="Initial model", label_updated="Update model") {
   ## reshape data (tidy/tall form)
   dat <- as.data.frame(tab)
   dat$Var1 <- rownames(tab)
@@ -86,8 +85,8 @@ plot_reclassification <- function(tab, low="#fee8c8", high="#aeeb34", title='Rec
       geom_tile(aes(fill = color)) + 
       scale_fill_gradient("", low = low, high = high, na.value = "white") +
       geom_text(aes(label = round(value, 1))) +
-      xlab('Updated model') +
-      ylab('Initial model') + 
+      xlab(label_updated) +
+      ylab(label_initial) + 
       scale_x_discrete(position = "top")  +
       ggtitle(title) + theme_minimal()
   
