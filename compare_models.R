@@ -6,6 +6,10 @@ library(here)
 
 if(!exists("reclassification_returned", mode='function')) source(here::here('reclassification.R'))
 
+.compare_models_loaded <- function() {
+  return(TRUE)
+}
+
 fix_ci_df__ <- function(ci_obj) {
   return(data.frame(sp = as.numeric(row.names(ci_obj)),
                     se.low = ci_obj[, 1],
@@ -64,7 +68,14 @@ compare_aucs <- function(df, true_label, model1risk, model2risk, model2_label=NU
   return(list(plot=p, pval=model_compar))
 }
 
-plot_reclassification <- function(tab, diagonal='#e1e6ed', low="#cedef5", high="#cef5db", title='Reclassification', label_initial="Initial model", label_updated="Update model") {
+plot_reclassification <- function(tab, diagonal='#e1e6ed', low="#f5ddce", high="#cef5db", invert_colors=F,
+                                  title='Reclassification', label_initial="Initial model", label_updated="Update model") {
+  if(invert_colors) {
+    temp <- high
+    high <- low
+    low <- temp
+  }
+  
   ## reshape data (tidy/tall form)
   dat <- as.data.frame(tab)
   dat$Var1 <- rownames(tab)
@@ -80,7 +91,7 @@ plot_reclassification <- function(tab, diagonal='#e1e6ed', low="#cedef5", high="
   
   dat2$row <- ceil(seq(1:nrow(dat2)) / nrow(tab))
   dat2$col <- (seq(1:42) - 1) %% 6 + 1
-  dat2$color <- ifelse(dat2$row < dat2$col, 'high', 'low')
+  dat2$color <- ifelse(dat2$row < dat2$col, 'low', 'high')
   
   dat2$color <- ifelse((as.character(dat2$Var1) == as.character(dat2$Var2)), 'diagonal', dat2$color)
   dat2$color <- ifelse(dat2$Var2 == ' % reclassified', NA, dat2$color)
