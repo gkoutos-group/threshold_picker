@@ -7,7 +7,9 @@ library(plyr)
 library(tidyverse)
 library(readxl)
 
-source(here::here('compare_models.R'))
+VERSION <- 'threshold_picker-alpha'
+
+if(!exists(".compare_models_loaded", mode='function')) source(here::here('compare_models.R'))
 
 if(!exists(".base_auc_plot", mode='function')) source(here::here('single_model.R'))
 
@@ -303,14 +305,14 @@ server <- function(input, output, session) {
   })
   
   output$comparison_heatmap_present <- renderPlot({
-    plot_reclassification(reclass_output()$tab_present, title='Present reclassification',
-                          diagonal='#e1e6ed', low="#cef5db", high="#cedef5",
+    plot_reclassification(reclass_output()$tab_present, title='Cases reclassification',
+                          invert_colors=F,
                           label_initial=input$initial_model_label, label_updated=input$updated_model_label)
   })
   
   output$comparison_heatmap_absent <- renderPlot({
-    plot_reclassification(reclass_output()$tab_absent, title='Absent reclassification', 
-                          diagonal='#e1e6ed', low="#cedef5", high="#cef5db",
+    plot_reclassification(reclass_output()$tab_absent, title='Controls reclassification', 
+                          invert_colors=T,
                           label_initial=input$initial_model_label, label_updated=input$updated_model_label)
   })
   
@@ -333,4 +335,24 @@ server <- function(input, output, session) {
   output$comparison_idi_output <- renderText({
     paste0(reclass_output()$idi$value, paste0(' [', reclass_output()$idi$ci95_low, '-', reclass_output()$idi$ci95_high, ']'), paste0(' (', reclass_output()$idi$pval, ')'))
   })
+  
+  # based download name
+  base_download_name <- reactive({
+    dfn <- "sample"
+    if(!is.null(input$dataset$datapath)) {
+      dfn <- input$dataset$name
+    }
+    
+    return(paste(format(Sys.time(), "%Y%m%d"), dfn, VERSION, sep="_"))
+  })
+  
+  output$download_table_metrics <- downloadHandler(
+    filename = function() {
+      paste0(base_download_name(), "_complete_table_metrics.csv")
+    },
+    content = function(file) {
+      write.csv(.table_all_metrics(df(), input), file, row.names = FALSE)
+    },
+    contentType = "text/csv"
+  )
 }

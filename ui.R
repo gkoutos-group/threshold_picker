@@ -137,7 +137,8 @@ ui <- fluidPage(
                  verbatimTextOutput('metrics'),
                  HTML(
                    "* ModelMetrics 1.2.2 has an issue with TNR calculation, this could slightly reduce the calculated value."
-                 )
+                 ),
+                 downloadButton("download_table_metrics", "Download complete performance table")
                )
              )),
     tabPanel("Comparison",
