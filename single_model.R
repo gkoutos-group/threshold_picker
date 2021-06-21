@@ -3,6 +3,7 @@ library(ggplot2)
 library(ModelMetrics)
 library(PRROC)
 library(pROC)
+library(rlang)
 
 .get_number_predicted_positive <- function(df, input) {
   return(sum(df[[input$predicted_scores]] > input$threshold_slider))
@@ -87,6 +88,68 @@ library(pROC)
       cm[1, 1] * input$tn_cost_cash +
       cm[1, 2] * input$fn_cost_cash
   )
+}
+
+# table as the metrics
+.table_all_metrics <- function(df, input) {
+  # create new input to generate in different thresholds
+  gen_inputs <- function(x) {
+    new_input <- list(threshold_slider=x,
+                      tp_cost_cash=input$tp_cost_cash,
+                      fp_cost_cash=input$fp_cost_cash,
+                      tn_cost_cash=input$tn_cost_cash,
+                      fn_cost_cash=input$fn_cost_cash,
+                      
+                      tp_cost=input$tp_cost,
+                      fp_cost=input$fp_cost,
+                      tn_cost=input$tn_cost,
+                      fn_cost=input$fn_cost,
+                      
+                      true_variable=input$true_variable,
+                      predicted_scores=input$predicted_scores)
+    return(new_input)
+  }
+  
+  thresholds <- lapply(seq(0, 1, 0.01), gen_inputs)
+  
+  
+  ts <- seq(0, 1, 0.01)
+  
+  precisions <- sapply(thresholds, function(x) {.threshold_to_precision(df, x)})
+  npvs <- sapply(thresholds, function(x) {.threshold_to_npv(df, x)})
+  nnes <- sapply(thresholds, function(x) {.threshold_to_nne(df, x)})
+  specs <- sapply(thresholds, function(x) {.threshold_to_specificity(df, x)})
+  senss <- sapply(thresholds, function(x) {.threshold_to_sensitivity(df, x)})
+  
+  dors <- sapply(thresholds, function(x) {.threshold_to_dor(df, x)})
+  
+  f1s <- sapply(thresholds, function(x) {.threshold_to_f1score(df, x)})
+  acc <- sapply(thresholds, function(x) {.threshold_to_accuracy(df, x)})
+  
+  tns <- sapply(thresholds, function(x) {.confusion_matrix(x$threshold_slider, df, x)[1,1]})
+  fns <- sapply(thresholds, function(x) {.confusion_matrix(x$threshold_slider, df, x)[1,2]})
+  fps <- sapply(thresholds, function(x) {.confusion_matrix(x$threshold_slider, df, x)[2,1]})
+  tps <- sapply(thresholds, function(x) {.confusion_matrix(x$threshold_slider, df, x)[2,2]})
+
+  cost_overall <- sapply(thresholds, function(x) {.cost_overall(x$threshold_slider, df, x)})
+  cash_overall <- sapply(thresholds, function(x) {.cost_cash_overall(x$threshold_slider, df, x)})
+  
+  d <- list(thresholds=ts,
+            precision=precisions,
+            npv=npvs,
+            nne=nnes,
+            spec=specs,
+            sens=senss,
+            dor=dors,
+            f1score=f1s,
+            accuracy=acc,
+            TN=tns,
+            FN=fns,
+            FP=fps,
+            TP=tps,
+            lifetime_cost=cost_overall,
+            resource_cost=cash_overall)
+  return(as.data.frame(d))
 }
 
 # return the plot with the costs
