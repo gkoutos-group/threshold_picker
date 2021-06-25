@@ -3,6 +3,7 @@ library(shinyjs)
 
 threshold_default <- 0.5
 
+if(!exists(".loaded_cutpointr_wrapper", mode='function')) source(here::here('cutpointr_wrapper.R'))
 
 jscode_comparison_enable_disable <- "
 shinyjs.disableTab = function(name) {
