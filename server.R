@@ -13,6 +13,8 @@ if(!exists(".compare_models_loaded", mode='function')) source(here::here('compar
 
 if(!exists(".base_auc_plot", mode='function')) source(here::here('single_model.R'))
 
+if(!exists(".loaded_cutpointr_wrapper", mode='function')) source(here::here('cutpointr_wrapper.R'))
+
 server <- function(input, output, session) {
   # returns the dataset
   df <- reactive({
@@ -355,4 +357,40 @@ server <- function(input, output, session) {
     },
     contentType = "text/csv"
   )
+  
+  handling_events <- FALSE
+  
+  # observe events then change method or threshold as needed
+  observeEvent(input$threshold_slider, {
+    if(handling_events) return()
+    updateSelectInput(session, "cutpoint_method",
+                      label = "Method:",
+                      choices = names(methods_available),
+                      selected = names(methods_available)[1]
+    )}, priority=2)
+  
+  observeEvent(input$threshold_slider, {
+    handling_events <<- F
+    }, priority=1)
+  
+  observeEvent({list(input$cutpoint_method, input$cutpoint_metric)}, {
+    if(input$cutpoint_method != names(methods_available)[1]) {
+      handling_events <<- T
+      
+      cmethod <- methods_available[[input$cutpoint_method]]
+      cmetric <- metrics_available[[input$cutpoint_metric]]
+      
+      c <- cutpointr_best_point(data=df(),
+                                x=input$predicted_scores,
+                                class=input$true_variable,
+                                direction='<=',
+                                pos_class=1,
+                                method=methods_available[[input$cutpoint_method]],
+                                metric=metrics_available[[input$cutpoint_metric]])
+
+      
+      updateSliderInput(session, "threshold_slider", value = c,
+                        min = 0, max = 1, step = 0.01)
+    }
+  }, priority=0)
 }
