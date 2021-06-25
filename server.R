@@ -383,7 +383,7 @@ server <- function(input, output, session) {
       c <- cutpointr_best_point(data=df(),
                                 x=input$predicted_scores,
                                 class=input$true_variable,
-                                direction='<=',
+                                direction='>=',
                                 pos_class=1,
                                 method=methods_available[[input$cutpoint_method]],
                                 metric=metrics_available[[input$cutpoint_metric]])

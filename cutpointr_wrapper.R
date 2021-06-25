@@ -52,8 +52,8 @@ cutpointr_best_point <- function(data, x, class, direction="<=", pos_class=1, me
   c <- cutpointr::cutpointr(data=data,
                             x=!!x,
                             class=!!class,
-                            direction='<=',
-                            pos_class=1,
+                            direction=direction,
+                            pos_class=pos_class,
                             method=method,
                             metric=metric)
   return(c$optimal_cutpoint)
