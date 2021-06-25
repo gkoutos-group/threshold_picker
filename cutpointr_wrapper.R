@@ -8,7 +8,7 @@
 
 methods_available = list('-- Manual -- '=NULL, #default if there was a movement
                          'Maximize metric'=cutpointr::maximize_metric,
-                         'Minimize Metric'=cutpointr::minimize_metric,
+                         'Minimize metric'=cutpointr::minimize_metric,
                          #'maximize_loess_metric'=cutpointr::maximize_loess_metric,
                          #'minimize_loess_metric'=cutpointr::minimize_loess_metric,
                          #'maximize_spline_metric'=cutpointr::maximize_spline_metric,
