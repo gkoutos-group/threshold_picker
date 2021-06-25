@@ -18,29 +18,29 @@ methods_available = list('-- Manual -- '=NULL, #default if there was a movement
                          #'maximize_boot_metric'=cutpointr::maximize_boot_metric,
                          #'minimize_boot_metric'=cutpointr::minimize_boot_metric,
                          #'oc_manual'=cutpointr::oc_manual,
-                         'Sample mean as cutpoint'=cutpointr::oc_mean,
-                         'Sample median as cutpoint'=cutpointr::oc_median,
                          'Maximize Youden-Index after kernel smoothing'=cutpointr::oc_youden_kernel,
-                         'Maximize Youden-Index assuming normal distribution'=cutpointr::oc_youden_normal
+                         'Maximize Youden-Index assuming normal distribution'=cutpointr::oc_youden_normal,
+                         'Sample mean as cutpoint'=cutpointr::oc_mean,
+                         'Sample median as cutpoint'=cutpointr::oc_median
                          )
 
 
-metrics_available = list('Accuracy'=cutpointr::accuracy,
-                         'Absolute difference between sensitivity and specificity'=cutpointr::abs_d_sens_spec,
-                         'Absolute difference between PPV and NPV'=cutpointr::abs_d_ppv_npv,
-                         'Distance to point (0,1) in AUCROC curve'=cutpointr::roc01,
+metrics_available = list('Distance to point (0,1) in Sensitivity x Specificity curve'=cutpointr::roc01,
                          'Cohens Kappa'=cutpointr::cohens_kappa,
-                         'PPV + NPV'=cutpointr::sum_ppv_npv,
-                         'PPV * NPV'=cutpointr::prod_ppv_npv,
-                         'Sensitivity + Specificity'=cutpointr::sum_sens_spec,
-                         'Sensitivity * Specificity'=cutpointr::prod_sens_spec,
-                         'Sensitivity + Specificity - 1'=cutpointr::youden,
                          'Diagnostic Odds Ratio'=cutpointr::odds_ratio,
                          'Relative risk'=cutpointr::risk_ratio,
                          'P-value of Chi-Squared test'=cutpointr::p_chisquared,
                          #'cost_misclassification'=cost_misclassification,
                          #'total_utility'=cutpointr::total_utility,
-                         'F1-score'=cutpointr::F1_score
+                         'F1-score'=cutpointr::F1_score,
+                         'Accuracy'=cutpointr::accuracy,
+                         'Absolute (PPV - NPV)'=cutpointr::abs_d_ppv_npv,
+                         'PPV + NPV'=cutpointr::sum_ppv_npv,
+                         'PPV * NPV'=cutpointr::prod_ppv_npv,
+                         'Absolute (Sensitivity - Specificity)'=cutpointr::abs_d_sens_spec,
+                         'Sensitivity + Specificity'=cutpointr::sum_sens_spec,
+                         'Sensitivity * Specificity'=cutpointr::prod_sens_spec,
+                         'Sensitivity + Specificity - 1'=cutpointr::youden
                          #'metric_constrain'=cutpointr::metric_constrain,
                          #'sens_constrain'=cutpointr::sens_constrain,
                          #'spec_constrain'=cutpointr::spec_constrain,
