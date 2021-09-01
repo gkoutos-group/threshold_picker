@@ -7,6 +7,8 @@ library(plyr)
 library(tidyverse)
 library(readxl)
 
+options(shiny.maxRequestSize = 30*1024^2)
+
 VERSION <- 'threshold_picker-alpha'
 
 if(!exists(".compare_models_loaded", mode='function')) source(here::here('compare_models.R'))
