@@ -29,3 +29,35 @@ The costs could be obtained from different ways. It is suggest hypothesizing usi
 You can upload your model output file. This file must be a .csv file with comma-separated values. 
 The files requires a column with the `true label` of each data point (the classes must be translated to 0 or 1) and a `prediction score` column with values between 0 and 1.
 
+### Sample dataset
+
+See of changing the threshold affect the results. Then, click on the settings and compare to another model. The "Updated Model" (`pred_rf`) sample in the app has a good threshold of `0.24`.
+
+Generated using:
+```R
+library(NHSRdatasets)
+library(randomForest)
+library(rpart)
+library(e1071)
+
+data(stranded_data)
+stranded_data$Y <- as.factor(as.numeric(stranded_data$stranded.label == 'Stranded'))
+
+stranded_data[is.na(stranded_data$periods_of_previous_care), ]$periods_of_previous_care <- 0
+
+form <- Y ~ age + care.home.referral + medicallysafe + hcop + mental_health_care
+m <- glm(form, data=stranded_data, family='binomial')
+m_rf <- randomForest(form, data=stranded_data)
+m_rpart <- rpart(form, data=stranded_data)
+m_svm <- svm(form, data=stranded_data, probability=T)
+
+stranded_data$pred_glm <- predict(m, stranded_data, type='response')
+stranded_data$pred_rf <- predict(m_rf, stranded_data, type='prob')[, 2]
+stranded_data$pred_rpart <- predict(m_rpart, stranded_data, type='prob')[, 2]
+stranded_data$pred_svm <- attr(predict(m_svm, stranded_data, type='prob', probability=T), 'probabilities')[, 1]
+
+# View(stranded_data[, c('Y', 'pred_glm', 'pred_rf', 'pred_rpart', 'pred_svm')])
+
+write.csv(stranded_data[, c('Y', 'pred_glm', 'pred_rf', 'pred_rpart', 'pred_svm')], "sample_dataset_NHSRdatasets.csv", row.names = FALSE)
+
+```

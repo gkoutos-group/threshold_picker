@@ -1,7 +1,7 @@
 library(shiny)
 library(shinyjs)
 
-threshold_default <- 0.5
+threshold_default <- 0.58
 
 if(!exists(".loaded_cutpointr_wrapper", mode='function')) source(here::here('cutpointr_wrapper.R'))
 
@@ -198,7 +198,7 @@ ui <- fluidPage(
                  textInput("sheet", label = "If XLSX file, add sheet name:", value=""),
                  
                  textInput("true_variable", label = "True class column name:", value =
-                             "class"),
+                             "Y"),
                  span(textOutput("true_variable_info"),
                       style = "color:red"),
                  
@@ -206,7 +206,7 @@ ui <- fluidPage(
                              "1"),
                  
                  textInput("predicted_scores", label = "Predicted score column name (current model):", value =
-                             "prediction"),
+                             "pred_svm"),
                  span(textOutput("predicted_scores_info"),
                       style = "color:red"),
                  textInput("initial_model_label", 
@@ -219,8 +219,8 @@ ui <- fluidPage(
                                  actionButton("predicted_scores_swap", "Swap"))),
                  
                  textInput("predicted_scores_2", 
-                           label="Predicted score column name (updated model):",
-                           value="prediction2"),
+                           label="Predicted score column name (Updated model):",
+                           value="pred_rf"),
                  span(textOutput("predicted_scores_2_info"),
                       style = "color:red"),
                  textInput("updated_model_label", 
@@ -238,17 +238,17 @@ ui <- fluidPage(
                                 value = 0),
                    numericInput("tp_cost_cash",
                                 label = "TP resources",
-                                value = 0)
+                                value = 20)
                  )),
                  
                  fluidRow(splitLayout(
                    cellWidths = c("50%", "50%"),
                    numericInput("fp_cost",
                                 label = "FP life",
-                                value = 0),
+                                value = 15),
                    numericInput("fp_cost_cash",
                                 label = "FP resources",
-                                value = 0)
+                                value = 10)
                  )),
                  fluidRow(splitLayout(
                    cellWidths = c("50%", "50%"),
@@ -264,10 +264,10 @@ ui <- fluidPage(
                    cellWidths = c("50%", "50%"),
                    numericInput("fn_cost",
                                 label = "FN life",
-                                value = 0),
+                                value = 20),
                    numericInput("fn_cost_cash",
                                 label = "FN resources",
-                                value = 0)
+                                value = 30)
                  )),
                  br(),
                  fluidRow(splitLayout(
@@ -393,7 +393,10 @@ ui <- fluidPage(
              HTML('<i>PRROC</i> (Precision-Recall curves).<br/>'),
              HTML('<i>Hmisc</i> (NRI/IDI).<br/>'),
              HTML('<i>ggplot2, scales</i> (visualisation).<br/>'),
-             HTML('<i>cutpointr</i> (optimal threshold points).<br/>')
+             HTML('<i>cutpointr</i> (optimal threshold points).<br/>'),
+             
+             HTML('<br/>Sample dataset generated from library(NHSRdatasets).<br/>'),
+             HTML('Predictions of two different models are on columns `pred_glm`, `pred_svm`, `pred_rpart` and `pred_rf`.<br/>')
              )
   ),
   

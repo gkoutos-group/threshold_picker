@@ -21,7 +21,7 @@ server <- function(input, output, session) {
   # returns the dataset
   df <- reactive({
     if (is.null(input$file_input$datapath)) {
-      tdf <- read.csv('sample_dataset.csv')
+      tdf <- read.csv('sample_dataset_NHSRdatasets.csv')
     } else if(grepl(".xls$|.xlsx$", input$file_input$datapath)) {
       tdf <- read_excel(input$file_input$datapath, sheet=ifelse(input$sheet == "", 1, input$sheet))
     } else {
