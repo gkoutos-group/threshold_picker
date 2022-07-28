@@ -8,7 +8,7 @@ E-mail me suggestions, comments and issues.
 
 ## Introduction
 
-This is a prototype to evaluate the different threshold points for an AUC curve. It is also available at https://vroth.shinyapps.io/thresholdloss/.
+This is a prototype to evaluate the different threshold points for an AUC curve. It is available at https://gkoutoslab.bham.ac.uk/threshold_picker/.
 
 It also shows some different curves usually taken into consideration to make a decision, and as you change the threshold of the model the reference points are shown in the different plots.
 
